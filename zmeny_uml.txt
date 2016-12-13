@@ -1,0 +1,15 @@
+Personal
+   add
+      username, password
+   remove
+
+Pocitace
+   remove
+      cena
+   add
+      constraint
+         prubeh_opravy - neopraveno, opravuje se, opraveno
+      
+Zakazky
+   remove
+      cena
