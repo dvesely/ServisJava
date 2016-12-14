@@ -3,14 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controllers;
+package obrazek;
+
+import java.awt.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
 
 /**
  *
  * @author Dominik
  */
-public interface IFormController {
+public class Obrazek extends Pane {
     
-    void setData(Object[] data);
     
 }

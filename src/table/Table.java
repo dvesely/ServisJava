@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -30,7 +31,7 @@ public final class Table {
         if (table == null) throw new NullPointerException("TableView nesmí být null.");        
         this.tableView = table;        
         this.formName = formName;
-        setQuery(query);        
+        initQuery(query);        
     }
     
     public int getSelectedId() {
@@ -50,13 +51,13 @@ public final class Table {
      * @return Object[] data radku ktery se rovna aktualnimu vybranemu ID
      * @throws SQLException 
      */
-    public Object[] getSelectedRow() throws SQLException {
+    public Map<String, String> getSelectedRow() throws SQLException {
         int id = getSelectedId();
         if (id != -1 && rowQuery != null) {
             PreparedStatement ps = OracleConnector.getConnection()
                     .prepareStatement(rowQuery);
             ps.setInt(1, id);
-            Object[] r = Utils.resultSetToListOfArrayObject(ps.executeQuery()).getFirst();
+            Map<String, String> r = Utils.resultSetToListOfMapString(ps.executeQuery()).getFirst();
             ps.close();
             return r;
         }
@@ -110,7 +111,7 @@ public final class Table {
         rs.close();
     }
     
-    public void setQuery(String query) throws SQLException {
+    public void initQuery(String query) throws SQLException {
         this.query = query;
         ResultSet data = createColumns();
         refreshData(data);

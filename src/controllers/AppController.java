@@ -39,7 +39,7 @@ public class AppController implements Initializable {
     
     @FXML
     public void openZakazkyAction(ActionEvent e) throws SQLException {
-        Table table = App.openTable("Zakázky", "Order", "select * from v_zakazky");
+        Table table = App.showTable("Zakázky", "Order", "select * from v_zakazky");
         table.setRowQuery("select * from zakazky where id = ?");
         table.setDeleteQuery("zakazky");
     }

@@ -6,12 +6,13 @@
 package utils;
 
 import alerts.ErrorAlert;
-import controllers.IFormController;
-import controllers.TableController;
+import controllers.forms.IFormController;
+import controllers.TabulkaController;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Map;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
@@ -62,11 +63,19 @@ public class App {
         return null;
     }
     
+    public static void showForm(String formName) {
+        createForm(formName).show();
+    }
+    
+    public static void showForm(String formName, Map<String, String> data) {
+        createForm(formName, data).show();
+    }
+    
     public static Stage createForm(String formName) {
         return createForm(formName, null);
     }
     
-    public static Stage createForm(String formName, Object[] data) {
+    public static Stage createForm(String formName, Map<String, String> data) {
         try {
             setLoader("/forms/"+formName+"Form.fxml");    
             Stage stage = new Stage(StageStyle.UTILITY);
@@ -80,16 +89,16 @@ public class App {
             
             //stackForms.push(stage);            
             return stage;
-        }catch (IOException ex) {
+        }catch ( Exception ex) {
             new ErrorAlert("Formulář '"+formName+"' nebyl nalezen.").showAndWait();                             
             ex.printStackTrace();
             return null;
         }
     }
     
-    public static Table openTable(String title, String formName, String query) throws SQLException {
-        Stage stage = App.createView("Table", false);                                
-        Table table = ((TableController)getController()).initTable(formName, query); 
+    public static Table showTable(String title, String formName, String query) throws SQLException {
+        Stage stage = App.createView("Tabulka", false);                                
+        Table table = ((TabulkaController)getController()).initTable(title, formName, query); 
         stage.show();        
         App.setTitle(title);
         return table;
@@ -103,6 +112,10 @@ public class App {
     
     public static void setComboItem(int itemId) {
         comboItem = new ItemIdValue(String.valueOf(itemId));
+    }
+    
+    public static Stage getActive() {
+        return activeStage;
     }
     
     public static void closeActive() throws NoWindowToClose {

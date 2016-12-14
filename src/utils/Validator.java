@@ -27,7 +27,7 @@ public class Validator {
         try {
             return Integer.parseInt(string);
         }catch (NumberFormatException e) {
-            errorMessages.add(message+ " musí být číslo.");
+            errorMessages.add(message+ " může obsahovat pouze čísla.");
             return -1;
         }
     }

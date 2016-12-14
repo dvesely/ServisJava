@@ -6,6 +6,7 @@
 package app;
 
 import alerts.ErrorAlert;
+import exceptions.ValidException;
 import java.sql.SQLException;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -24,10 +25,12 @@ public class Main extends Application {
         Thread.setDefaultUncaughtExceptionHandler(Main::showError);
         
         App.setPrimaryStage(stage);
-        //App.setScene("Table");
+        stage.setMaximized(true);
+        App.setScene("App");
         //stage.show();
-        //App.openTable("asd", "Order", "select * from v_zakazky");
-        App.createForm("Client").showAndWait();
+        App.showTable("Personal", "Personal", "select * from v_personal")
+                .setRowQuery("select * from v_personal where id = ?");
+        //App.showForm("Personal");
     }
 
         private static void showError(Thread t, Throwable e) {
@@ -47,8 +50,10 @@ public class Main extends Application {
         ErrorAlert alert = new ErrorAlert(e.getMessage());
         if (e instanceof SQLException) {              
             alert.setHeaderText("Chyba databáze");
+        }else if (e instanceof ValidException) {
+            alert.setHeaderText("Validace formuláře");
         }else {
-            alert.setContentText(e.toString()+"\n"+alert.getContentText());
+            e.printStackTrace();
         }
         alert.show();
     }

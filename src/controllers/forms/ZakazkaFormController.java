@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controllers;
+package controllers.forms;
 
 import alerts.ErrorAlert;
 import exceptions.NoWindowToClose;
@@ -18,6 +18,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import utils.App;
 import database.DBComboBox;
+import java.util.Map;
 import utils.ItemIdValue;
 import utils.Utils;
 
@@ -26,7 +27,7 @@ import utils.Utils;
  *
  * @author Dominik
  */
-public class OrderFormController implements Initializable, IFormController {
+public class ZakazkaFormController implements Initializable, IFormController {
 
     @FXML
     private ComboBox<ItemIdValue> clientCombo;
@@ -67,7 +68,7 @@ public class OrderFormController implements Initializable, IFormController {
     }
 
     @Override
-    public void setData(Object[] data) {        
+    public void setData(Map<String, String> data) {        
         //firstNameTF.setText(data[1].toString());                
         //addressCombo.getSelectionModel().select(new ItemIdValue(data[6].toString()));
     }

@@ -5,15 +5,14 @@
  */
 package controllers;
 
-import database.OracleConnector;
 import java.net.URL;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TableView;
 import table.Table;
@@ -24,8 +23,10 @@ import utils.App;
  *
  * @author Dominik
  */
-public class TableController implements Initializable {
+public class TabulkaController implements Initializable {
 
+    @FXML
+    private Label nadpisLabel;
     @FXML
     private TableView tableView;
     @FXML
@@ -36,8 +37,9 @@ public class TableController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {}    
     
-    public Table initTable(String formName, String query) throws SQLException {        
+    public Table initTable(String title, String formName, String query) throws SQLException {        
         table = new Table(formName, query, tableView);                    
+        nadpisLabel.setText(title);
         return table;
     }
     
@@ -48,7 +50,7 @@ public class TableController implements Initializable {
     
     @FXML
     public void edit(ActionEvent ev) throws SQLException {
-        Object[] data = table.getSelectedRow();
+        Map<String, String> data = table.getSelectedRow();
         if (data == null) {
             table.refreshData();
             return;

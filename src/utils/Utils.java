@@ -5,16 +5,15 @@
  */
 package utils;
 
-import database.OracleConnector;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Clob;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedList;
-import javafx.scene.control.ComboBox;
+import java.util.Map;
 
 /**
  *
@@ -22,14 +21,36 @@ import javafx.scene.control.ComboBox;
  */
 public class Utils {
     
-    public static LinkedList<Object[]> resultSetToListOfArrayObject(ResultSet rs) throws SQLException {
-        LinkedList<Object[]> result = new LinkedList<>();
+    public static LinkedList<Map<String, String>> resultSetToListOfMapString(ResultSet rs) throws SQLException {
+        LinkedList<Map<String, String>> result = new LinkedList<>();
         int count = -1;
+        String[] columnNames = new String[]{};
         while (rs.next()) {
             if (count == -1) {
-                count = rs.getMetaData().getColumnCount();
+                ResultSetMetaData meta = rs.getMetaData();
+                count = meta.getColumnCount();
+                columnNames = new String[count];
+                for (int i = 0; i < count; i++) {
+                    columnNames[i] = meta.getColumnLabel(i+1).toLowerCase();
+                }
             }
-            Object[] row = new Object[count];
+            Map<String, String> row = new HashMap<>();
+            for (int i = 0; i < count; i++) {
+                row.put(columnNames[i],rs.getString(i+1));
+            }
+            result.add(row);
+        }        
+        return result;
+    }
+    
+    public static LinkedList<String[]> resultSetToListOfArrayString(ResultSet rs) throws SQLException {
+        LinkedList<String[]> result = new LinkedList<>();
+        int count = -1;        
+        while (rs.next()) {
+            if (count == -1) {                
+                count = rs.getMetaData().getColumnCount();                
+            }
+            String[] row = new String[count];
             for (int i = 0; i < count; i++) {
                 row[i] = rs.getString(i+1);
             }

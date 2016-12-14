@@ -14,7 +14,7 @@ import java.util.Objects;
 public class ItemIdValue {
     
     private int id;
-    private String vale;
+    private String vale;    
     
     public ItemIdValue(String id) {
         int intId;

@@ -14,7 +14,21 @@ import javafx.scene.control.ButtonType;
  */
 public class ErrorAlert extends AbstractAlert {
     
+    public static void show(String message) {
+        show(message, null);
+    }
+    
+    public static void show(String message, Exception ex) {
+        new ErrorAlert(message).show();
+        if (ex != null) {
+            System.err.println(message+":\n"+ex.getMessage());
+        }else {
+            System.err.println(message);
+        }
+        
+    }
+    
     public ErrorAlert(String message) {
         super(Alert.AlertType.ERROR, "Chybová hláška", message, ButtonType.CLOSE);
-    }    
+    }  
 }

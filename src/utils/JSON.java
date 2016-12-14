@@ -43,7 +43,14 @@ public class JSON {
             throw new SQLException("Nastala neznamá chyba. Nebyla definována proměnná 'status'.");                    
         }
         if (!object.get("status").getAsString().equals("OK")) {
-            throw new SQLException(object.get("message").getAsString());
+            if (object.has("message")) {
+                throw new SQLException(object.get("message").getAsString());
+            }else if (object.has("error_message")) {
+                throw new SQLException(object.get("error_message").getAsString());
+            }else {
+                throw new SQLException("Nastala chyba na serveru. (chybí info o chybě)");
+            }
+            
         }   
     }
 }

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javafx.scene.control.ComboBox;
 import utils.ItemIdValue;
-import static utils.Utils.resultSetToListOfArrayObject;
+import utils.Utils;
 
 
 public class DBComboBox {
@@ -32,7 +32,7 @@ public class DBComboBox {
     
     public void refresh() throws SQLException {
         Statement stm = OracleConnector.getConnection().createStatement();
-        LinkedList<Object[]> data = resultSetToListOfArrayObject(stm.executeQuery(query));
+        LinkedList<String[]> data = Utils.resultSetToListOfArrayString(stm.executeQuery(query));
         List<ItemIdValue> list = new LinkedList<>();
         for (Object[] o : data) {
             list.add(new ItemIdValue(Integer.parseInt(o[0].toString()), o[1].toString()));            

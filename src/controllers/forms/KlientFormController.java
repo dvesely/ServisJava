@@ -3,22 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package controllers;
+package controllers.forms;
 
-import alerts.ErrorAlert;
-import database.DBComboBox;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import oracle.jdbc.OracleTypes;
 import utils.App;
@@ -31,7 +28,7 @@ import utils.Validator;
  *
  * @author Dominik
  */
-public class ClientFormController implements Initializable, IFormController {
+public class KlientFormController implements Initializable, IFormController {
 
     @FXML
     private TextField jmenoTF;
@@ -58,19 +55,34 @@ public class ClientFormController implements Initializable, IFormController {
     public void initialize(URL url, ResourceBundle rb) {                     
     }    
     
+    /**
+     * Pridani noveho klienta nebo jeho uprava podle ID
+     * @param ev
+     * @throws SQLException
+     * @throws NoWindowToClose
+     * @throws ValidException 
+     */
     @FXML
-    public void add(ActionEvent ev) throws SQLException, NoWindowToClose, ValidException {      
+    public void potvrdAction(ActionEvent ev) throws SQLException, NoWindowToClose, ValidException {              
         Validator valid = new Validator();        
         CallableStatement cStmt;
-        String procedureAdd = "{call pck_klienti.pridej_klienta(?, ?, ?, ?, ?, ?)}";
-        String procedureUpdate = "{call pck_klienti.uprav_klienta(?, ?, ?, ?, ?, ?, ?)}";
+        /**
+         *     procedure pridej_uprav_personal_a_adresu(p_id number,
+    p_jmeno varchar2, p_prijmeni varchar2, p_telefon number, 
+    p_email varchar2, p_pozice_id number, p_ulice varchar2, p_cislo_popisne number,
+    p_mesto varchar2, p_psc number, p_zeme varchar2, p_result out clob)
+         */
+        String procedureAdd = "{call pck_personal.pridej_uprav_personal_a_adresu"
+                + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";        
         
-        if (idKlienta != null) {
-             cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
-             cStmt.setInt("p_id", idKlienta);
-        }else {
-            cStmt = OracleConnector.getConnection().prepareCall(procedureUpdate);            
-        } 
+        cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
+        if (idKlienta == null) {//insert
+            cStmt.setNull("p_id", OracleTypes.NUMBER);
+        }else {//update
+            cStmt.setInt("p_id", idKlienta);
+        }
+        
+        
         
         cStmt.setString("p_jmeno", jmenoTF.getText());
         cStmt.setString("p_prijmeni", prijmeniTF.getText());
@@ -94,11 +106,20 @@ public class ClientFormController implements Initializable, IFormController {
     }
 
     @Override
-    public void setData(Object[] data) throws NumberFormatException {        
-        idKlienta = new Integer(data[0].toString());
-        jmenoTF.setText(data[1].toString());
-        prijmeniTF.setText(data[2].toString());                
-        telefonTF.setText(data[3].toString());
-        emailTF.setText(data[4].toString());                
+    public void setData(Map<String, String> data) throws NumberFormatException {        
+        idKlienta = new Integer(data.get("id"));
+        
+        jmenoTF.setText(data.get("jmeno"));
+        prijmeniTF.setText(data.get("prijmeni"));                        
+        //adresa
+        uliceTF.setText(data.get("ulice"));
+        cisloTF.setText(data.get("cislo"));
+        mestoTF.setText(data.get("mesto"));
+        pscTF.setText(data.get("psc"));
+        zemeTF.setText(data.get("zeme"));
+        //email
+        emailTF.setText(data.get("email"));
+        //telefon
+        telefonTF.setText(data.get("telefon"));               
     }
 }
