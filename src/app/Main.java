@@ -28,9 +28,11 @@ public class Main extends Application {
         stage.setMaximized(true);
         App.setScene("App");
         //stage.show();
-        App.showTable("Personal", "Personal", "select * from v_personal")
-                .setRowQuery("select * from v_personal where id = ?");
-        //App.showForm("Personal");
+        //App.showTable("Personal", "Personal", "select * from v_personal")
+        //        .setRowQuery("select * from v_personal where id = ?");
+        App.showTable("Klienti", "Klient", "select * from v_klienti")
+                .setRowQuery("select * from v_klienti where id = ?");
+        //App.showForm("Klient");
     }
 
         private static void showError(Thread t, Throwable e) {
@@ -48,6 +50,7 @@ public class Main extends Application {
 
     private static void showErrorDialog(Throwable e) {
         ErrorAlert alert = new ErrorAlert(e.getMessage());
+        System.err.println(e.getMessage());
         if (e instanceof SQLException) {              
             alert.setHeaderText("Chyba databáze");
         }else if (e instanceof ValidException) {

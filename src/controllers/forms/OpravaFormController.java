@@ -14,11 +14,14 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Rectangle2D;
+import javafx.geometry.BoundingBox;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -32,8 +35,11 @@ import utils.App;
  */
 public class OpravaFormController implements Initializable, IFormController {
 
-    private static final int MAX_SIRKA = 300;    
+    private static final int MAX_SIRKA = 300;   
+    private static final int MAX_VYSKA = 500;
     
+    @FXML
+    private TextArea popisZavadyTA;
     @FXML
     private HBox fotkyHBox;
     @FXML
@@ -41,28 +47,33 @@ public class OpravaFormController implements Initializable, IFormController {
     
     private LinkedList<ImageView> noveFotky = new LinkedList<>();
     private Integer idOpravy;
+    private double vyskaScrollPanelu;
         
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        App.setTitle(null);
-        Image image = new Image("file:/C:/Users/domin/Pictures/IMG_20160908_141722.jpg",
-                    MAX_SIRKA, scrollPane.getHeight(), false, false);        
-        
-        ImageView iw = new ImageView(image);        
-        noveFotky.add(iw);
+        App.setTitle(null);        
+        scrollPane.viewportBoundsProperty().addListener((ObservableValue<? extends Object> observable, Object oldValue, Object newValue) -> {
+            BoundingBox bounds = (BoundingBox)newValue;
+            vyskaScrollPanelu = bounds.getHeight();
+            zmenMaximalniVyskuFotek();
+        });        
         aktualizujFotky();
     }    
+    
+    @Override
+    public void setData(Map<String, String> data) {
+        popisZavadyTA.setText(data.get("popis_zavady"));
+    }
     
     @FXML
     public void nahratFotkuAction(ActionEvent ev) {
         FileChooser fch = new FileChooser();
         fch.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pouze obrázky", "*.jpg", "*.bmp", "*.png"));        
+        fch.setInitialDirectory(new File("d:\\Obrázky\\wallpapers\\"));
         File file = fch.showOpenDialog(App.getActive());
         if (file != null) {            
             Image image = new Image(file.toURI().toString());                
-            ImageView imageView = new ImageView(image);
-            imageView.setViewport(Rectangle2D.EMPTY);
-            noveFotky.add(imageView);
+            pridejObrazek(image);
             aktualizujFotky();
         }
     }
@@ -85,11 +96,17 @@ public class OpravaFormController implements Initializable, IFormController {
             fotkyHBox.getChildren().add((obrazek));
         }
     }
-
-    @Override
-    public void setData(Map<String, String> data) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        System.out.println("oke");
-    }
     
+    private void zmenMaximalniVyskuFotek() {
+        for (ImageView fotka : noveFotky) {                        
+            fotka.setFitHeight(vyskaScrollPanelu);            
+        }
+    }
+
+    private void pridejObrazek(Image image) {
+        ImageView iw = new ImageView(image);
+        iw.setPreserveRatio(true);
+        iw.setFitHeight(vyskaScrollPanelu < MAX_VYSKA ? vyskaScrollPanelu : MAX_SIRKA);
+        noveFotky.add(iw);
+    }    
 }

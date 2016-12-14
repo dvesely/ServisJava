@@ -24,12 +24,29 @@ public class Validator {
     }
     
     public int toInteger(String string, String message) {
+        return toInteger(string, message, false);
+    }
+    
+    public int toInteger(String string, String message, boolean fullMessage) {
         try {
             return Integer.parseInt(string);
-        }catch (NumberFormatException e) {
-            errorMessages.add(message+ " může obsahovat pouze čísla.");
+        }catch (NumberFormatException e) {            
+            addMessage(message + (fullMessage ? " může obsahovat pouze čísla." : ""));
             return -1;
         }
+    }
+    
+    public Validator fixLength(String str, int length, String name) {
+        if (str.length() == length) {
+            addMessage(name + " musí mít přesně %d znaků.", length);
+        }
+        return this;
+    }
+    
+    public Validator length(String str, int min, int max, String name) {
+        if (str.length() < min || str.length() > max)
+            addMessage(name + " musí obsahovat %d-%d znaků.", min, max);
+        return this;
     }
     
     public int comboBoxToInteger(ComboBox<ItemIdValue> combo) {
@@ -49,6 +66,10 @@ public class Validator {
             sb.append(str).append('\n');
         }        
         throw new ValidException(sb.toString());
+    }
+    
+    private void addMessage(String message, Object... parametrs) {
+        errorMessages.add(String.format(message, parametrs));
     }
     
 }

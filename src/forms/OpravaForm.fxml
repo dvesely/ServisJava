@@ -39,10 +39,10 @@
             <VBox VBox.vgrow="ALWAYS">
                <children>
                   <Label text="Label" />
-                  <TextArea prefHeight="200.0" prefWidth="200.0" />
+                  <TextArea fx:id="popisZavadyTA" prefHeight="200.0" prefWidth="200.0" />
                </children>
             </VBox>
-            <VBox layoutX="10.0" layoutY="55.0">
+            <VBox layoutX="10.0" layoutY="55.0" minHeight="100.0" VBox.vgrow="ALWAYS">
                <children>
                   <HBox alignment="CENTER_LEFT" spacing="30.0">
                      <children>
@@ -56,16 +56,14 @@
                         <Insets bottom="5.0" top="5.0" />
                      </padding>
                   </HBox>
-                  <ScrollPane fx:id="scrollPane" maxHeight="1.7976931348623157E308" prefHeight="181.0" prefWidth="184.0">
+                  <ScrollPane fx:id="scrollPane" vbarPolicy="NEVER" VBox.vgrow="ALWAYS">
                      <content>
-                        <HBox fx:id="fotkyHBox" />
+                        <HBox fx:id="fotkyHBox" spacing="5.0" />
                      </content>
                   </ScrollPane>
                </children>
             </VBox>
          </children>
       </VBox>
-      <Pane prefHeight="200.0" prefWidth="200.0" />
-      <Pane prefHeight="200.0" prefWidth="200.0" />
    </children>
 </AnchorPane>

@@ -10,6 +10,7 @@ import database.DBComboBox;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
+import forms.Form;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
@@ -25,6 +26,7 @@ import oracle.jdbc.OracleTypes;
 import utils.App;
 import utils.ItemIdValue;
 import utils.JSON;
+import utils.Length;
 import utils.Utils;
 import utils.Validator;
 
@@ -61,6 +63,16 @@ public class PersonalFormController implements Initializable, IFormController {
     private Integer idZamestnance;
     
     public void initialize(URL url, ResourceBundle rb) {
+        Form.addLengthLimit(jmenoTF, Length.JMENO);
+        Form.addLengthLimit(prijmeniTF, Length.PRIJMENI);
+        Form.addLengthLimit(uliceTF, Length.ULICE);
+        Form.addLengthLimit(cisloTF, Length.CISLO_POPISNE);
+        Form.addLengthLimit(mestoTF, Length.MESTO);        
+        Form.addLengthLimit(pscTF, Length.PSC);
+        Form.addLengthLimit(zemeTF, Length.ZEME);
+        Form.addLengthLimit(telefonTF, Length.TELEFON);
+        Form.addLengthLimit(emailTF, Length.EMAIL);
+        
         poziceDBCombo = new DBComboBox(poziceCombo);        
         try {
             poziceDBCombo.init("select id, nazev from v_pozice");            
@@ -72,7 +84,7 @@ public class PersonalFormController implements Initializable, IFormController {
     
     @FXML
     public void potvrdAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose {
-        Validator valid =  new Validator();
+        Validator valid =  new Validator();                                
         CallableStatement cStmt;        
         String procedureAdd = "{call pck_personal.pridej_uprav_personal_a_adresu"
                 + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";        
@@ -86,7 +98,7 @@ public class PersonalFormController implements Initializable, IFormController {
         
         cStmt.setString("p_jmeno", jmenoTF.getText());
         cStmt.setString("p_prijmeni", prijmeniTF.getText());
-        cStmt.setInt("p_telefon", valid.toInteger(telefonTF.getText(), "Telefon"));
+        cStmt.setInt("p_telefon", valid.toInteger(telefonTF.getText(), "Špatný formát telefonu.", true));
         cStmt.setString("p_email", emailTF.getText());  
         cStmt.setInt("p_pozice_id", valid.comboBoxToInteger(poziceCombo));  
         cStmt.setString("p_ulice", uliceTF.getText());  

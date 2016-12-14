@@ -8,6 +8,7 @@ package controllers.forms;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
+import forms.Form;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ import oracle.jdbc.OracleTypes;
 import utils.App;
 import utils.ItemIdValue;
 import utils.JSON;
+import utils.Length;
 import utils.Validator;
 
 /**
@@ -53,6 +55,15 @@ public class KlientFormController implements Initializable, IFormController {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {                     
+        Form.addLengthLimit(jmenoTF, Length.JMENO);
+        Form.addLengthLimit(prijmeniTF, Length.PRIJMENI);
+        Form.addLengthLimit(uliceTF, Length.ULICE);
+        Form.addLengthLimit(cisloTF, Length.CISLO_POPISNE);
+        Form.addLengthLimit(mestoTF, Length.MESTO);        
+        Form.addLengthLimit(pscTF, Length.PSC);
+        Form.addLengthLimit(zemeTF, Length.ZEME);
+        Form.addLengthLimit(telefonTF, Length.TELEFON);
+        Form.addLengthLimit(emailTF, Length.EMAIL);
     }    
     
     /**
@@ -64,16 +75,17 @@ public class KlientFormController implements Initializable, IFormController {
      */
     @FXML
     public void potvrdAction(ActionEvent ev) throws SQLException, NoWindowToClose, ValidException {              
+               
         Validator valid = new Validator();        
         CallableStatement cStmt;
         /**
-         *     procedure pridej_uprav_personal_a_adresu(p_id number,
+         procedure pridej_uprav_klienta_a_adresu(p_id number,
     p_jmeno varchar2, p_prijmeni varchar2, p_telefon number, 
-    p_email varchar2, p_pozice_id number, p_ulice varchar2, p_cislo_popisne number,
+    p_email varchar2, p_ulice varchar2, p_cislo_popisne number,
     p_mesto varchar2, p_psc number, p_zeme varchar2, p_result out clob)
          */
-        String procedureAdd = "{call pck_personal.pridej_uprav_personal_a_adresu"
-                + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";        
+        String procedureAdd = "{call pck_klienti.pridej_uprav_klienta_a_adresu"
+                + "(? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";        
         
         cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
         if (idKlienta == null) {//insert
@@ -86,13 +98,20 @@ public class KlientFormController implements Initializable, IFormController {
         
         cStmt.setString("p_jmeno", jmenoTF.getText());
         cStmt.setString("p_prijmeni", prijmeniTF.getText());
-        cStmt.setInt("p_telefon", valid.toInteger(telefonTF.getText(), "Telefon musí obsahovat pouze čísla."));
+        cStmt.setString("p_ulice", uliceTF.getText());                        
+        cStmt.setInt("p_cislo_popisne", valid.toInteger(cisloTF.getText(), "Číslo popisné"));
+        cStmt.setString("p_mesto", mestoTF.getText());                        
+        cStmt.setInt("p_psc", valid.toInteger(pscTF.getText(), "PSČ"));
+        cStmt.setString("p_zeme", zemeTF.getText());                        
+        cStmt.setInt("p_telefon", valid.toInteger(telefonTF.getText(), "Telefon"));
         cStmt.setString("p_email", emailTF.getText());                        
+        
         cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
         
         valid.validate();
         
         cStmt.execute();
+        System.out.println(cStmt.getString("p_result"));
         JSON.checkStatus(cStmt.getString("p_result"));        
         cStmt.close();            
         OracleConnector.getConnection().commit();
@@ -113,7 +132,7 @@ public class KlientFormController implements Initializable, IFormController {
         prijmeniTF.setText(data.get("prijmeni"));                        
         //adresa
         uliceTF.setText(data.get("ulice"));
-        cisloTF.setText(data.get("cislo"));
+        cisloTF.setText(data.get("cislo_popisne"));
         mestoTF.setText(data.get("mesto"));
         pscTF.setText(data.get("psc"));
         zemeTF.setText(data.get("zeme"));
