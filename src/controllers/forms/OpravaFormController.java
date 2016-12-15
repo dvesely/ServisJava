@@ -11,13 +11,12 @@ import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.sql.Blob;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,8 +26,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -36,16 +33,20 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageOutputStream;
 import oracle.jdbc.OracleTypes;
 import utils.App;
 import utils.JSON;
@@ -82,17 +83,14 @@ public class OpravaFormController implements Initializable, IFormController {
         App.setTitle(null);
         typKomponent.getItems().clear();
         naplnComboBox();
-        try {
-            aktualizujFotky();
-        } catch (IOException ex) {
-            Logger.getLogger(OpravaFormController.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     @FXML
-    public void dokoncitOpravuAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose {
+    public void dokoncitOpravuAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose, IOException {
         Validator valid = new Validator();
-        CallableStatement cStmt = DB.prepareCall("pck_opravy.uprav_opravu", 5);
+        CallableStatement cStmt = DB.prepareCall("pck_opravy.uprav_opravu", 6);
+        cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
+        cStmt.registerOutParameter("p_id", OracleTypes.NUMBER);
         if (idOpravy == null) {//insert
             cStmt.setNull("p_id", OracleTypes.NUMBER);
         } else {//update
@@ -108,17 +106,35 @@ public class OpravaFormController implements Initializable, IFormController {
 
         cStmt.execute();
         JSON.checkStatus(cStmt.getString("p_result"));
+        int opravaId = cStmt.getInt("p_id");
         cStmt.close();
-        OracleConnector.getConnection().commit();
-        App.setComboItem(JSON.getAsInt("id"));
-        App.closeActive();
 
         //vlozeni obrazků do databaze
         for (Obrazek o : fotky) {
-            //BufferedImage img = SwingFXUtils.fromFXImage(o.obr.getImage(), null);.
-            // InputStream is = new FileInputStream(o.obr.getImage());
-        }
+            //DateFormat df = new DateFormat;
+            cStmt = DB.prepareCall("pck_opravy.uprav_obrazek", 6);
+            cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
 
+            cStmt.setNull("p_id", OracleTypes.NULL);
+            BufferedImage bImage = SwingFXUtils.fromFXImage(o.obr.getImage(), null);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(bImage, o.format, baos);
+            baos.close();
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+
+            cStmt.setBlob("p_data", bais);
+            cStmt.setInt("p_oprava_id", opravaId);
+            cStmt.setString("p_format", o.format);
+            cStmt.setInt("p_velikost", o.velikost);
+            cStmt.execute();
+            JSON.checkStatus(cStmt.getString("p_result"));
+            cStmt.close();
+        }
+        OracleConnector.getConnection().commit();
+        //App.setComboItem(JSON.getAsInt("id"));
+        App.closeActive();
     }
 
     @FXML
@@ -134,21 +150,44 @@ public class OpravaFormController implements Initializable, IFormController {
             String format = file.getName().substring(file.getName().length() - 3);
             int velikost = Math.round(file.length() / 1024); // v Kb
             Date datum = new Date();
-            imageView.setOnMouseEntered(prejetiMysi(format, velikost, datum, imageView));
-
-            fotky.add(new Obrazek(format, velikost, datum, imageView));
+            Obrazek o = new Obrazek(format, velikost, datum, imageView);            
+            imageView.setOnMouseEntered(prejetiMysi(o));
+            imageView.setOnMouseClicked(praveKlikMysi(o));
+            
+            fotky.add(o);
             aktualizujFotky();
         }
     }
 
-    private EventHandler<MouseEvent> prejetiMysi(String format, int velikost, Date datum, ImageView imageView) {
+    private EventHandler<MouseEvent> prejetiMysi(Obrazek o) {
         return new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                Tooltip tp = new Tooltip("Formát: " + format + "\n"
-                        + "Velikost: " + velikost + " Kb\n"
-                        + "Datum přidání: " + new SimpleDateFormat("dd.MM.yyyy").format(datum));
-                Tooltip.install(imageView.getParent(), tp);
+                Tooltip tp = new Tooltip("Formát: " + o.format + "\n"
+                        + "Velikost: " + o.velikost + " Kb\n"
+                        + "Datum přidání: " + new SimpleDateFormat("dd.MM.yyyy").format(o.datumNahrani));
+                Tooltip.install(o.obr.getParent(), tp);
+            }
+        };
+    }
+
+    private EventHandler<MouseEvent> praveKlikMysi(Obrazek o) {
+        return new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (event.getButton() == MouseButton.SECONDARY) {
+                    ContextMenu cmenu = new ContextMenu();
+                    MenuItem deleteImg = new MenuItem("Vymaž obrázek");
+                    deleteImg.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent event) {
+                            fotky.remove(o);
+                            fotkyHBox.getChildren().remove(o.obr);
+                        }
+                    });
+                    cmenu.getItems().add(deleteImg);
+                    cmenu.show(o.obr, event.getScreenX(), event.getScreenY());
+                }
             }
         };
     }
@@ -156,7 +195,7 @@ public class OpravaFormController implements Initializable, IFormController {
     private void naplnComboBox() {
         try {
             PreparedStatement ps = OracleConnector.getConnection()
-                    .prepareStatement("select nazev from typy_komponent");
+                    .prepareStatement("select nazev from typy_komponent order by id");
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -178,10 +217,9 @@ public class OpravaFormController implements Initializable, IFormController {
                 ps.setInt(1, idOpravy);
 
                 ResultSet rs = ps.executeQuery();
-                Blob blob = OracleConnector.getConnection().createBlob();
                 ImageView img;
 
-                while (rs.next()) {                  
+                while (rs.next()) {
                     img = new ImageView(SwingFXUtils.toFXImage(ImageIO.read(rs.getBlob(1).getBinaryStream()), null));
                     fotky.add(new Obrazek(rs.getString(2), rs.getInt(3), rs.getDate(4), img));
                 }
@@ -194,14 +232,13 @@ public class OpravaFormController implements Initializable, IFormController {
         fotkyHBox.getChildren().clear();
         for (Obrazek obr : fotky) {
             fotkyHBox.getChildren().add(obr.obr);
-            prejetiMysi(obr.format, obr.velikost, obr.datumNahrani, obr.obr);
         }
     }
 
     @Override
     public void setData(Map<String, String> data) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        idOpravy = new Integer(data.get("id"));
+        System.out.println(data);
     }
 
     private class Obrazek {
