@@ -238,7 +238,10 @@ public class OpravaFormController implements Initializable, IFormController {
     @Override
     public void setData(Map<String, String> data) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        System.out.println(data);
+        idOpravy = new Integer(data.get("id"));  
+        popisOpravy.setText(data.get("popis_opravy"));
+        cenaZaOpravu.setText(data.get("cena"));
+        typKomponent.getSelectionModel().select(data.get("typy_komponent_id"));
     }
 
     private class Obrazek {
