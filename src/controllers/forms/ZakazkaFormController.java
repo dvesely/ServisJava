@@ -20,10 +20,19 @@ import utils.App;
 import database.DBComboBox;
 import database.OracleConnector;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
+import javafx.util.converter.DateStringConverter;
+import javafx.util.converter.DateTimeStringConverter;
 import utils.ItemIdValue;
 import utils.Query;
 
@@ -37,11 +46,11 @@ public class ZakazkaFormController implements Initializable, IFormController {
     @FXML
     private ComboBox<ItemIdValue> clientCombo;
     @FXML
-    private TextField approxCostTF;
+    private TextField pribliznaCenaTF;
     @FXML
-    private DatePicker startDateTF;    
+    private DatePicker zacatekDatePicker;    
     @FXML
-    private DatePicker endDateTF;  
+    private DatePicker konecDatePicker;  
     @FXML
     private Button upravButton;
     
@@ -51,6 +60,8 @@ public class ZakazkaFormController implements Initializable, IFormController {
     public void initialize(URL url, ResourceBundle rb) {
         clients = new DBComboBox(clientCombo);        
         upravButton.setDisable(true);
+        zacatekDatePicker.setValue(LocalDate.now());     
+        konecDatePicker.setValue(LocalDate.now());
         try {            
             clients.init("select id, jmeno||' '||prijmeni||'('||telefon||')' from klienti");            
         }catch (SQLException ex) {
@@ -60,7 +71,6 @@ public class ZakazkaFormController implements Initializable, IFormController {
     
     @FXML
     public void potvrdAction(ActionEvent ev) throws NoWindowToClose {
-        
         App.closeActiveForm(true);
     }
     
@@ -91,10 +101,14 @@ public class ZakazkaFormController implements Initializable, IFormController {
     }
 
     @Override
-    public void setData(Map<String, String> data) {        
-        //firstNameTF.setText(data[1].toString());                
-        //addressCombo.getSelectionModel().select(new ItemIdValue(data[6].toString()));
+    public void setData(Map<String, String> data) {   
+        System.out.println(data);
+        //System.out.println(df.format(data.get("datum_prijmuti")));        
         upravButton.setDisable(false);
+        pribliznaCenaTF.setText(data.get("priblizna_cena"));
+        
+        //zacatekDatePicker.setValue(DB.StringToLocalDate(data.get("datum_prijmuti")));
+        //konecDatePicker.setValue(DB.StringToLocalDate(data.get("datum_priblizne_dokonceni")));
     }
     
 }

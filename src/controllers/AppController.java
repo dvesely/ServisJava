@@ -39,19 +39,38 @@ public class AppController implements Initializable {
     
     @FXML
     public void openZakazkyAction(ActionEvent e) throws SQLException {
-        Table table = App.showTable("Zakázky", "Order", "select * from v_zakazky");
+        Table table = App.showTable("Zakázky", "Zakazka", "select * from v_zakazky");
         table.setRowQuery("select * from zakazky where id = ?");
         table.setDeleteQuery("zakazky");
     }
     
     @FXML
-    public void openOpravyAction(ActionEvent e) {
-        //App.createView("Opravy");
+    public void openPocitaceAction(ActionEvent e) throws SQLException {
+        Table table = App.showTable("Počítače", "Pocitac", "select * from v_pocitace");
+        table.setRowQuery("select * from v_pocitace where id = ?");
+        table.setDeleteQuery("pocitace");
+    }    
+    
+    @FXML
+    public void openPersonalAction(ActionEvent e) throws SQLException {
+        Table table = App.showTable("Personal", "Personál", "select * from v_personal");
+        table.setRowQuery("select * from v_personal where id = ?");
+        table.setDeleteQuery("pocitace");
     }
     
     @FXML
-    public void openPersonalAction(ActionEvent e) {
-        //App.createView("Personal");
+    public void openKlientiAction(ActionEvent e) throws SQLException {
+        Table table = App.showTable("Klienti", "Klient", "select * from v_klienti");
+        table.setRowQuery("select * from v_klienti where id = ?");
+        table.setDeleteQuery("klienti");
     }
+    
+    @FXML
+    public void openOpravyAction(ActionEvent e) throws SQLException {
+        Table table = App.showTable("Opravy", "Oprava", "select * from v_opravy");
+        table.setRowQuery("select * from v_opravy where id = ?");
+        table.setDeleteQuery("opravy");
+    }
+    
     
 }

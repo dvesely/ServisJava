@@ -5,13 +5,11 @@
  */
 package database;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -106,6 +104,10 @@ public class DB {
             result.add(row);
         }        
         return result;
+    }
+    
+    public static LocalDate StringToLocalDate(String date) {
+        return LocalDate.parse(date);
     }
     
 }
