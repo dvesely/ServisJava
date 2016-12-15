@@ -1,5 +1,6 @@
 package table;
 
+import database.DB;
 import database.OracleConnector;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,14 +14,13 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import utils.Utils;
 
 public final class Table {
     
     private TableView<Row> tableView;    
     
     private String query;
-    private String rowQuery;//dotaz pro urcity radek podle ID
+    private String fromQuery;//dotaz pro urcity radek podle ID
     private String tableDelete;//tabulka v ktere se bude mazat podle ID
     
     private String formName;
@@ -30,8 +30,9 @@ public final class Table {
     public Table(String formName, String query, TableView table) throws SQLException {
         if (table == null) throw new NullPointerException("TableView nesmí být null.");        
         this.tableView = table;        
-        this.formName = formName;
+        this.formName = formName;        
         initQuery(query);        
+             
     }
     
     public int getSelectedId() {
@@ -47,17 +48,17 @@ public final class Table {
     }
     
     /**
-     * Vybere data z databaze pomoci dotazu rowQuery
+     * Vybere data z databaze pomoci dotazu fromQuery
      * @return Object[] data radku ktery se rovna aktualnimu vybranemu ID
      * @throws SQLException 
      */
     public Map<String, String> getSelectedRow() throws SQLException {
         int id = getSelectedId();
-        if (id != -1 && rowQuery != null) {
+        if (id != -1 && fromQuery != null) {
             PreparedStatement ps = OracleConnector.getConnection()
-                    .prepareStatement(rowQuery);
-            ps.setInt(1, id);
-            Map<String, String> r = Utils.resultSetToListOfMapString(ps.executeQuery()).getFirst();
+                    .prepareStatement(fromQuery);
+            ps.setInt(1, id);            
+            Map<String, String> r = DB.resultSetToMapString(ps.executeQuery());
             ps.close();
             return r;
         }
@@ -82,7 +83,7 @@ public final class Table {
     
     public void addColumn(String name) {        
         TableColumn<Row, String> tc = new TableColumn(name);   
-        tc.setSortable(false);
+        //tc.setSortable(false);
         tc.setCellValueFactory(new PropertyValueFactory(name));
         tc.setCellValueFactory(param -> {
             int index = param.getTableView().getColumns().indexOf(param.getTableColumn());
@@ -96,7 +97,13 @@ public final class Table {
                 
             }
             return null;
-        });
+        });        /*              
+        tc.setCellFactory(new Callback<TableColumn<Row, String>, TableCell<Row, String>>() {
+            @Override
+            public TableCell<Row, String> call(TableColumn<Row, String> param) {
+                
+            }
+        });*/        
         tableView.getColumns().add(tc);                    
     }
     
@@ -119,7 +126,7 @@ public final class Table {
     }
 
     public void setRowQuery(String rowQuery) {
-        this.rowQuery = rowQuery;
+        this.fromQuery = rowQuery;
     }
 
     public void setDeleteQuery(String removeQuery) {
@@ -142,6 +149,7 @@ public final class Table {
     }
     
     private void refreshData(ResultSet data) throws SQLException {
+        Row lastSelected = tableView.getSelectionModel().getSelectedItem();
         clearData();
         ObservableList<Row> items = FXCollections.observableArrayList();        
         while (data.next()) {
@@ -152,6 +160,7 @@ public final class Table {
             items.add(new Row(row));
         }
         setItems(items);        
+        tableView.getSelectionModel().select(lastSelected);
     }
     
     private void clearData() {
@@ -165,7 +174,41 @@ public final class Table {
         public Row(Object[] data) {
             this.data = data;
         }
-        
+
+        @Override
+        public int hashCode() {
+            int hash = 7;      
+            int hashId;
+            if (data.length == 0) {
+                hashId = -1;
+            }else {
+                hashId = data[0].hashCode();
+            }
+            hash = 97 * hash + hashId;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Row other = (Row) obj;
+            if (this.data.length!=other.data.length) {                
+                return false;
+            }
+            if (this.data.length > 0 && !this.data[0].equals(other.data[0])) {
+                //prvni parametry se nerovnaji
+                return false;
+            }
+            return true;
+        }
     }
     
     public class Column {

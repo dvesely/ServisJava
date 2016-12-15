@@ -31,7 +31,7 @@ public class Validator {
         try {
             return Integer.parseInt(string);
         }catch (NumberFormatException e) {            
-            addMessage(message + (fullMessage ? " může obsahovat pouze čísla." : ""));
+            addMessage(message + (!fullMessage ? " může obsahovat pouze čísla." : ""));
             return -1;
         }
     }

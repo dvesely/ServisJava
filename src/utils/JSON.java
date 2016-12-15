@@ -4,6 +4,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.sql.SQLException;
+import java.util.regex.Pattern;
+import jdk.nashorn.internal.runtime.regexp.RegExp;
 
 
 public class JSON {
@@ -36,7 +38,7 @@ public class JSON {
      * @param json String
      * @throws SQLException 
      */
-    public static void checkStatus(String json) throws SQLException {
+    public static void checkStatus(String json) throws SQLException {        
         JsonObject object = decode(json);
         
         if (!object.has("status")) {
@@ -44,13 +46,25 @@ public class JSON {
         }
         if (!object.get("status").getAsString().equals("OK")) {
             if (object.has("message")) {
-                throw new SQLException(object.get("message").getAsString());
-            }else if (object.has("error_message")) {
-                throw new SQLException(object.get("error_message").getAsString());
+                String message = object.get("message").getAsString();
+                if (object.get("code").getAsInt() < -20000) {//uzivateslka vyjimka
+                    message = extractMessage(message);
+                }
+                throw new SQLException(message);            
             }else {
                 throw new SQLException("Nastala chyba na serveru. (chybí info o chybě)");
             }
             
         }   
+    }
+    
+    /**
+     * Extrahuje zpravu z uzivatelske vyjimky v databazi
+     * @param oraMessage
+     * @return 
+     */
+    private static String extractMessage(String oraMessage) {
+        return oraMessage.substring(0, oraMessage.indexOf("\n"))
+                .replaceFirst("(ORA-[0-9]+:\\s)", "");
     }
 }

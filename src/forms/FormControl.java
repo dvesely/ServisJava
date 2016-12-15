@@ -13,7 +13,7 @@ import javafx.scene.control.TextField;
  *
  * @author Dominik
  */
-public class Form {
+public class FormControl {
     
     public static void addLengthLimit(final TextField textField, int limit) {
         textField.textProperty().addListener(

@@ -6,11 +6,12 @@
 package controllers.forms;
 
 import alerts.ErrorAlert;
+import database.DB;
 import database.DBComboBox;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
-import forms.Form;
+import forms.FormControl;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
@@ -27,7 +28,6 @@ import utils.App;
 import utils.ItemIdValue;
 import utils.JSON;
 import utils.Length;
-import utils.Utils;
 import utils.Validator;
 
 /**
@@ -63,15 +63,15 @@ public class PersonalFormController implements Initializable, IFormController {
     private Integer idZamestnance;
     
     public void initialize(URL url, ResourceBundle rb) {
-        Form.addLengthLimit(jmenoTF, Length.JMENO);
-        Form.addLengthLimit(prijmeniTF, Length.PRIJMENI);
-        Form.addLengthLimit(uliceTF, Length.ULICE);
-        Form.addLengthLimit(cisloTF, Length.CISLO_POPISNE);
-        Form.addLengthLimit(mestoTF, Length.MESTO);        
-        Form.addLengthLimit(pscTF, Length.PSC);
-        Form.addLengthLimit(zemeTF, Length.ZEME);
-        Form.addLengthLimit(telefonTF, Length.TELEFON);
-        Form.addLengthLimit(emailTF, Length.EMAIL);
+        FormControl.addLengthLimit(jmenoTF, Length.JMENO);
+        FormControl.addLengthLimit(prijmeniTF, Length.PRIJMENI);
+        FormControl.addLengthLimit(uliceTF, Length.ULICE);
+        FormControl.addLengthLimit(cisloTF, Length.CISLO_POPISNE);
+        FormControl.addLengthLimit(mestoTF, Length.MESTO);        
+        FormControl.addLengthLimit(pscTF, Length.PSC);
+        FormControl.addLengthLimit(zemeTF, Length.ZEME);
+        FormControl.addLengthLimit(telefonTF, Length.TELEFON);
+        FormControl.addLengthLimit(emailTF, Length.EMAIL);
         
         poziceDBCombo = new DBComboBox(poziceCombo);        
         try {
@@ -85,11 +85,9 @@ public class PersonalFormController implements Initializable, IFormController {
     @FXML
     public void potvrdAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose {
         Validator valid =  new Validator();                                
-        CallableStatement cStmt;        
-        String procedureAdd = "{call pck_personal.pridej_uprav_personal_a_adresu"
-                + "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";        
+        CallableStatement cStmt;                
         
-        cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
+        cStmt = DB.prepareCall("pck_personal.pridej_uprav_personal", 12);
         if (idZamestnance == null) {//insert
             cStmt.setNull("p_id", OracleTypes.NUMBER);
         }else {//update
@@ -115,12 +113,12 @@ public class PersonalFormController implements Initializable, IFormController {
         cStmt.close();            
         OracleConnector.getConnection().commit();
         App.setComboItem(JSON.getAsInt("id"));
-        App.closeActive();
+        App.closeActiveForm(true);
     }
     
     @FXML
     public void stornujAction(ActionEvent ev) throws NoWindowToClose {
-        App.closeActive();
+        App.closeActiveForm(false);
     }
 
     @Override

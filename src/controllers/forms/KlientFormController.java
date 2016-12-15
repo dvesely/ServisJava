@@ -5,10 +5,11 @@
  */
 package controllers.forms;
 
+import database.DB;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
-import forms.Form;
+import forms.FormControl;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
@@ -51,19 +52,19 @@ public class KlientFormController implements Initializable, IFormController {
     @FXML
     private TextField emailTF;        
     
-    private Integer idKlienta;
+    private Integer idKlienta;    
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {                     
-        Form.addLengthLimit(jmenoTF, Length.JMENO);
-        Form.addLengthLimit(prijmeniTF, Length.PRIJMENI);
-        Form.addLengthLimit(uliceTF, Length.ULICE);
-        Form.addLengthLimit(cisloTF, Length.CISLO_POPISNE);
-        Form.addLengthLimit(mestoTF, Length.MESTO);        
-        Form.addLengthLimit(pscTF, Length.PSC);
-        Form.addLengthLimit(zemeTF, Length.ZEME);
-        Form.addLengthLimit(telefonTF, Length.TELEFON);
-        Form.addLengthLimit(emailTF, Length.EMAIL);
+        FormControl.addLengthLimit(jmenoTF, Length.JMENO);
+        FormControl.addLengthLimit(prijmeniTF, Length.PRIJMENI);
+        FormControl.addLengthLimit(uliceTF, Length.ULICE);
+        FormControl.addLengthLimit(cisloTF, Length.CISLO_POPISNE);
+        FormControl.addLengthLimit(mestoTF, Length.MESTO);        
+        FormControl.addLengthLimit(pscTF, Length.PSC);
+        FormControl.addLengthLimit(zemeTF, Length.ZEME);
+        FormControl.addLengthLimit(telefonTF, Length.TELEFON);
+        FormControl.addLengthLimit(emailTF, Length.EMAIL);
     }    
     
     /**
@@ -77,24 +78,14 @@ public class KlientFormController implements Initializable, IFormController {
     public void potvrdAction(ActionEvent ev) throws SQLException, NoWindowToClose, ValidException {              
                
         Validator valid = new Validator();        
-        CallableStatement cStmt;
-        /**
-         procedure pridej_uprav_klienta_a_adresu(p_id number,
-    p_jmeno varchar2, p_prijmeni varchar2, p_telefon number, 
-    p_email varchar2, p_ulice varchar2, p_cislo_popisne number,
-    p_mesto varchar2, p_psc number, p_zeme varchar2, p_result out clob)
-         */
-        String procedureAdd = "{call pck_klienti.pridej_uprav_klienta_a_adresu"
-                + "(? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";        
+        CallableStatement cStmt;        
         
-        cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
         if (idKlienta == null) {//insert
-            cStmt.setNull("p_id", OracleTypes.NUMBER);
+            cStmt = DB.prepareCall("pck_klienti.pridej_klienta", 10);
         }else {//update
-            cStmt.setInt("p_id", idKlienta);
+            cStmt = DB.prepareCall("pck_klienti.uprav_klienta", 11);
+            cStmt.setInt("p_id", idKlienta);            
         }
-        
-        
         
         cStmt.setString("p_jmeno", jmenoTF.getText());
         cStmt.setString("p_prijmeni", prijmeniTF.getText());
@@ -110,23 +101,22 @@ public class KlientFormController implements Initializable, IFormController {
         
         valid.validate();
         
-        cStmt.execute();
-        System.out.println(cStmt.getString("p_result"));
+        cStmt.execute();        
         JSON.checkStatus(cStmt.getString("p_result"));        
         cStmt.close();            
         OracleConnector.getConnection().commit();
         App.setComboItem(JSON.getAsInt("id"));
-        App.closeActive();
+        App.closeActiveForm(true);
     }
     
     @FXML
     public void stornujAction(ActionEvent ev) throws NoWindowToClose {
-        App.closeActive();        
+        App.closeActiveForm(false);
     }
 
     @Override
     public void setData(Map<String, String> data) throws NumberFormatException {        
-        idKlienta = new Integer(data.get("id"));
+        idKlienta = new Integer(data.get("id"));        
         
         jmenoTF.setText(data.get("jmeno"));
         prijmeniTF.setText(data.get("prijmeni"));                        

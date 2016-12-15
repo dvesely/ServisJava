@@ -8,6 +8,7 @@ package utils;
 import alerts.ErrorAlert;
 import controllers.forms.IFormController;
 import controllers.TabulkaController;
+import database.DB;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import java.io.IOException;
@@ -55,8 +56,7 @@ public class App {
             setLoader("/views/"+viewName+"View.fxml");                
             Stage stage = new Stage();            
             if (setOwner) stage.initOwner(activeStage);
-            stage.setScene(new Scene(loader.load()));
-            stage.setOnCloseRequest(onWindowEventRollback());
+            stage.setScene(new Scene(loader.load()));            
             addOnFocusEvent(stage);
             return stage;
         }catch (IOException e){};
@@ -71,18 +71,15 @@ public class App {
         createForm(formName, data).show();
     }
     
-    public static Stage createForm(String formName) {
+    public static FormWindow createForm(String formName) {
         return createForm(formName, null);
     }
     
-    public static Stage createForm(String formName, Map<String, String> data) {
+    public static FormWindow createForm(String formName, Map<String, String> data) {
         try {
             setLoader("/forms/"+formName+"Form.fxml");    
-            Stage stage = new Stage(StageStyle.UTILITY);
-            stage.setScene(new Scene(loader.load()));
-            stage.initOwner(activeStage);
-            stage.initModality(Modality.WINDOW_MODAL);
-            stage.setOnCloseRequest(onWindowEventRollback());
+            FormWindow stage = new FormWindow(activeStage);
+            stage.setScene(new Scene(loader.load()));                        
             addOnFocusEvent(stage);            
             if (data != null)//inicializace dat pro upravu zaznamu                             
                 ((IFormController)getController()).setData(data);
@@ -110,7 +107,7 @@ public class App {
         return tmp;
     }
     
-    public static void setComboItem(int itemId) {
+    public static void setComboItem(int itemId) {        
         comboItem = new ItemIdValue(String.valueOf(itemId));
     }
     
@@ -118,11 +115,29 @@ public class App {
         return activeStage;
     }
     
+    public static FormWindow getActiveForm() {
+        if (activeStage instanceof FormWindow) {
+            return (FormWindow)activeStage;
+        }
+        return null;
+    }
+    
     public static void closeActive() throws NoWindowToClose {
         if (activeStage == null)
             throw new NoWindowToClose("Neexistuje žádné okno k zavření.");        
-        activeStage.close();
-        rollback();        
+        activeStage.close();        
+    }
+    /**
+     * Zavre aktualni formular a nastavi confirm
+     * @param confirm - parametr, ktery oznacuje zda byl formular potvrzen nebo ne
+     */
+    public static void closeActiveForm(boolean confirm) throws NoWindowToClose {
+        FormWindow form = getActiveForm();
+        if (form == null) {
+            throw new NoWindowToClose("Akivni okno neni formular.");            
+        }
+        form.setConfirm(confirm);
+        form.close();        
     }
     
     public static Scene getScene() {
@@ -167,13 +182,7 @@ public class App {
     
     public static void setUserId(int userId) {
         App.userId = userId;
-    }
-    
-    private static EventHandler<WindowEvent> onWindowEventRollback() {
-        return (WindowEvent event) -> {
-            rollback();
-        };
-    }
+    }    
     
     private static void setLoader(String relativePath) {
         loader = new FXMLLoader(App.class.getResource(relativePath));    
@@ -185,17 +194,6 @@ public class App {
                 Stage focused = (Stage)((ReadOnlyBooleanProperty)observable).getBean();
                 App.activeStage = focused;
         });
-    }
-    /**
-     * Pokusi se o rollback transakce, pokud se nepodari, 
-     * vypise do konzole chybovou hlasku.
-     */
-    private static void rollback() {
-        try {
-            OracleConnector.getConnection().rollback();
-        }catch (SQLException ex) {
-            System.out.println("Rollback se nepodarilo provest.\n"+ex.getMessage());
-        };    
     }
     
     private App() {};   

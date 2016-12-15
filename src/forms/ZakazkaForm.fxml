@@ -19,10 +19,11 @@
                         <Font size="41.0" />
                      </font>
                   </Label>
-                  <GridPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+                  <GridPane hgap="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="366.0" minWidth="0.0" prefWidth="86.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="489.0" minWidth="10.0" prefWidth="314.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="366.0" minWidth="0.0" prefWidth="83.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="489.0" minWidth="10.0" prefWidth="193.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" maxWidth="489.0" minWidth="10.0" prefWidth="127.0" />
                     </columnConstraints>
                     <rowConstraints>
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -35,11 +36,10 @@
                         <Label text="Přibližná cena:" GridPane.rowIndex="1" />
                         <Label text="Příjmutí:" GridPane.rowIndex="2" />
                         <Label text="Dokončení:" GridPane.rowIndex="3" />
-                        <TextField fx:id="endDateTF" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                        <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1">
+                        <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="2">
                            <children>
-                              <ComboBox fx:id="clientCombo" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-                              <Button mnemonicParsing="false" onAction="#newClientAction" text="Nový" />
+                              <Button minWidth="50.0" mnemonicParsing="false" onAction="#vytvorKlientaAction" text="Nový" />
+                              <Button fx:id="upravButton" layoutX="280.0" layoutY="24.0" minWidth="50.0" mnemonicParsing="false" onAction="#upravKlientaAction" text="Upravit" />
                            </children>
                         </HBox>
                         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -51,13 +51,15 @@
                               <Insets right="10.0" />
                            </padding>
                         </HBox>
-                        <TextField fx:id="startDateTF" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <DatePicker fx:id="startDateTF" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <DatePicker fx:id="endDateTF" layoutX="96.0" layoutY="128.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <ComboBox fx:id="clientCombo" maxWidth="1.7976931348623157E308" onAction="#comboAction" prefHeight="25.0" prefWidth="16.0" GridPane.columnIndex="1" />
                      </children>
                   </GridPane>
                   <HBox alignment="CENTER" prefHeight="0.0" prefWidth="300.0" spacing="30.0">
                      <children>
-                        <Button mnemonicParsing="false" onAction="#add" text="Přidat" />
-                        <Button mnemonicParsing="false" onAction="#cancel" text="Storno" />
+                        <Button mnemonicParsing="false" onAction="#potvrdAction" text="OK" />
+                        <Button mnemonicParsing="false" onAction="#stornujAction" text="Storno" />
                      </children>
                      <VBox.margin>
                         <Insets top="20.0" />
