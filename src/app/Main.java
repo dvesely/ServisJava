@@ -34,7 +34,7 @@ public class Main extends Application {
                            + "mesto,ulice,cislo_popisne,psc,zeme from v_personal where id = ?");
         //App.showTable("Klienti", "Klient", "select * from v_klienti")
                 //.setRowQuery("select * from v_klienti where id = ?");
-        //App.showForm("Zakazka");
+        App.showForm("Oprava");
     }
 
         private static void showError(Thread t, Throwable e) {

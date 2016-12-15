@@ -1,69 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.image.*?>
-<?import javafx.scene.text.*?>
-<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
+<?import javafx.collections.*?>
+<?import javafx.geometry.*?>
 <?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forms.OpravaFormController">
-   <children>
-      <VBox prefHeight="355.0" prefWidth="184.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-         <children>
-            <HBox alignment="CENTER_LEFT" prefHeight="45.0" prefWidth="600.0">
-               <children>
-                  <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="45.0" prefWidth="485.0" text="Oprava graficke karty" HBox.hgrow="ALWAYS">
-                     <font>
-                        <Font size="24.0" />
-                     </font>
-                  </Label>
-                  <VBox prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
-                     <children>
-                        <Label maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="306.0" text="Poslední úprava">
-                           <font>
-                              <Font name="System Bold" size="14.0" />
-                           </font>
-                        </Label>
-                        <Label alignment="CENTER_RIGHT" maxWidth="1.7976931348623157E308" prefHeight="35.0" prefWidth="306.0" text="20.3.2015" textAlignment="RIGHT">
-                           <font>
-                              <Font size="14.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </VBox>
-               </children>
+<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="717.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2" fx:controller="controllers.forms.OpravaFormController">
+  <children>
+    <VBox prefHeight="395.0" prefWidth="184.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+      <children>
+        <HBox alignment="CENTER" prefHeight="45.0" prefWidth="600.0">
+          <children>
+            <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="45.0" prefWidth="485.0" text="Oprava" HBox.hgrow="ALWAYS">
+              <font>
+                <Font name="System Bold" size="32.0" />
+              </font>
+            </Label>
+          </children>
+        </HBox>
+        <VBox VBox.vgrow="ALWAYS">
+          <children>
+            <Label text="Popis opravy" />
+            <TextArea id="popisZavadyTA" fx:id="popisOpravy" prefHeight="96.0" prefWidth="636.0" VBox.vgrow="ALWAYS" />
+          </children>
+        </VBox>
+        <VBox minHeight="100.0" VBox.vgrow="ALWAYS">
+          <children>
+            <HBox alignment="CENTER_LEFT" prefHeight="29.0" prefWidth="636.0" spacing="30.0">
+              <children>
+                <HBox alignment="CENTER_LEFT" minHeight="16.0" prefHeight="16.0" prefWidth="187.0" spacing="10.0">
+                  <children>
+                    <Label maxHeight="1.7976931348623157E308" text="Fotky" />
+                    <Button mnemonicParsing="false" onAction="#nahratFotkuAction" text="Nahát" />
+                  </children>
+                </HBox>
+                <HBox alignment="CENTER" prefHeight="21.0" prefWidth="250.0" spacing="10.0">
+                  <children>
+                    <Label text="Typ komponenty" />
+                    <ComboBox fx:id="typKomponent">
+                      <items>
+                        <FXCollections fx:factory="observableArrayList">
+                          <String fx:value="Item 1" />
+                          <String fx:value="Item 2" />
+                          <String fx:value="Item 3" />
+                        </FXCollections>
+                      </items>
+                    </ComboBox>
+                  </children>
+                </HBox>
+                <HBox alignment="CENTER_RIGHT" prefHeight="16.0" prefWidth="196.0" spacing="10.0">
+                  <children>
+                    <Label text="Cena:" />
+                    <TextField fx:id="cenaZaOpravu" prefWidth="69.0" />
+                  </children>
+                </HBox>
+              </children>
+              <padding>
+                <Insets bottom="5.0" top="5.0" />
+              </padding>
+              <VBox.margin>
+                <Insets />
+              </VBox.margin>
             </HBox>
-            <VBox VBox.vgrow="ALWAYS">
-               <children>
-                  <Label text="Label" />
-                  <TextArea fx:id="popisZavadyTA" prefHeight="200.0" prefWidth="200.0" />
-               </children>
-            </VBox>
-            <VBox layoutX="10.0" layoutY="55.0" minHeight="100.0" VBox.vgrow="ALWAYS">
-               <children>
-                  <HBox alignment="CENTER_LEFT" spacing="30.0">
-                     <children>
-                        <Label maxHeight="1.7976931348623157E308" text="Fotky" />
-                        <Button mnemonicParsing="false" onAction="#nahratFotkuAction" text="Nahát" />
-                     </children>
-                     <VBox.margin>
-                        <Insets />
-                     </VBox.margin>
-                     <padding>
-                        <Insets bottom="5.0" top="5.0" />
-                     </padding>
-                  </HBox>
-                  <ScrollPane fx:id="scrollPane" vbarPolicy="NEVER" VBox.vgrow="ALWAYS">
-                     <content>
-                        <HBox fx:id="fotkyHBox" spacing="5.0" />
-                     </content>
-                  </ScrollPane>
-               </children>
-            </VBox>
-         </children>
-      </VBox>
-   </children>
+            <ScrollPane fx:id="scrollPane" prefHeight="178.0" prefWidth="636.0" vbarPolicy="NEVER" VBox.vgrow="ALWAYS">
+              <content>
+                <HBox fx:id="fotkyHBox" spacing="5.0" />
+              </content>
+            </ScrollPane>
+          </children>
+        </VBox>
+        <HBox alignment="CENTER" prefHeight="37.0" prefWidth="636.0">
+          <children>
+            <Button mnemonicParsing="false" text="Dokonči opravu">
+              <font>
+                <Font name="System Bold" size="16.0" />
+              </font>
+              <HBox.margin>
+                <Insets top="5.0" />
+              </HBox.margin>
+            </Button>
+          </children>
+        </HBox>
+      </children>
+    </VBox>
+  </children>
 </AnchorPane>

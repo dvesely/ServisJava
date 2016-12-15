@@ -6,6 +6,7 @@
 package controllers.forms;
 
 import alerts.ErrorAlert;
+import database.DB;
 import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
@@ -92,7 +93,7 @@ public class OpravaFormController implements Initializable, IFormController {
     public void dokoncitOpravuAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose {
         Validator valid = new Validator();
         CallableStatement cStmt;
-        String procedureAdd = "{call pck_opravy.uprav_opravu()"
+        String procedureAdd = "{call pck_opravy.uprav_opravu"
                 + "(?, ?, ?, ?, ?)}";
 
         cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
