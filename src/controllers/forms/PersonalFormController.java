@@ -122,7 +122,8 @@ public class PersonalFormController implements Initializable, IFormController {
     }
 
     @Override
-    public void setData(Map<String, String> data) {       
+    public void setData(Map<String, String> data) { 
+        System.out.println(data);
         idZamestnance = new Integer(data.get("id"));
         
         jmenoTF.setText(data.get("jmeno"));

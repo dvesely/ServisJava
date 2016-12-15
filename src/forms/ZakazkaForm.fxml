@@ -44,15 +44,15 @@
                         </HBox>
                         <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                            <children>
-                              <TextField fx:id="approxCostTF" HBox.hgrow="ALWAYS" />
+                              <TextField fx:id="pribliznaCenaTF" HBox.hgrow="ALWAYS" />
                               <Label text="Kč" />
                            </children>
                            <padding>
                               <Insets right="10.0" />
                            </padding>
                         </HBox>
-                        <DatePicker fx:id="startDateTF" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <DatePicker fx:id="endDateTF" layoutX="96.0" layoutY="128.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <DatePicker fx:id="zacatekDatePicker" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                        <DatePicker fx:id="konecDatePicker" layoutX="96.0" layoutY="128.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                         <ComboBox fx:id="clientCombo" maxWidth="1.7976931348623157E308" onAction="#comboAction" prefHeight="25.0" prefWidth="16.0" GridPane.columnIndex="1" />
                      </children>
                   </GridPane>

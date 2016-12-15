@@ -25,16 +25,9 @@ public class Main extends Application {
         Thread.setDefaultUncaughtExceptionHandler(Main::showError);
         
         App.setPrimaryStage(stage);
-        stage.setMaximized(true);        
-        //App.setScene("App");
-        //stage.show();
-        App.showTable("Personal", "Personal", "select id,jmeno,prijmeni,pozice,telefon,email,"
-                + "mesto, ulice, cislo_popisne, psc, zeme from v_personal")
-                   .setRowQuery("select id,jmeno,prijmeni,pozice_id,telefon,email,"
-                           + "mesto,ulice,cislo_popisne,psc,zeme from v_personal where id = ?");
-        //App.showTable("Klienti", "Klient", "select * from v_klienti")
-                //.setRowQuery("select * from v_klienti where id = ?");
-        App.showForm("Oprava");
+        //stage.setMaximized(true);        
+        App.setScene("App");
+        stage.show();        
     }
 
         private static void showError(Thread t, Throwable e) {

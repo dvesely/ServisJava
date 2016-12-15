@@ -6,9 +6,16 @@
 package utils;
 
 import database.OracleConnector;
+import java.awt.image.BufferedImage;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 import oracle.jdbc.OracleTypes;
 import org.junit.Test;
 
@@ -22,8 +29,16 @@ public class AppTest {
     }
 
     @Test
+    public void testDatum() throws ParseException{
+        DateFormat df = new SimpleDateFormat("YYYY-MM-dd", Locale.getDefault());
+        
+            System.out.println(df.parse("1995-03-19 00:00:00.0"));
+        
+    }
+    
+    @Test
     public void testSetStage() {
-         try {
+        /* try {
             CallableStatement call= OracleConnector.getConnection().prepareCall
         ("{call pck_adresy.uprav_adresu(:id,:ulice,:cislo,:mesto,:psc,:zeme,:status)}");
             
@@ -39,7 +54,7 @@ public class AppTest {
             JSON.checkStatus(status);
         }catch (SQLException e) {
             System.out.println(e.getMessage());                        
-        };
+        };*/
     }
     
 }
