@@ -92,11 +92,7 @@ public class OpravaFormController implements Initializable, IFormController {
     @FXML
     public void dokoncitOpravuAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose {
         Validator valid = new Validator();
-        CallableStatement cStmt;
-        String procedureAdd = "{call pck_opravy.uprav_opravu"
-                + "(?, ?, ?, ?, ?)}";
-
-        cStmt = OracleConnector.getConnection().prepareCall(procedureAdd);
+        CallableStatement cStmt = DB.prepareCall("pck_opravy.uprav_opravu", 5);
         if (idOpravy == null) {//insert
             cStmt.setNull("p_id", OracleTypes.NUMBER);
         } else {//update
