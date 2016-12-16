@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
+import table.Table;
 import utils.App;
 
 /**
@@ -27,7 +28,10 @@ public class Main extends Application {
         App.setPrimaryStage(stage);
         //stage.setMaximized(true);        
         App.setScene("App");
-        stage.show();        
+        //stage.show();     
+        Table table = App.showTable("Opravy", "Oprava", "select * from v_opravy");
+        table.setRowQuery("select * from v_opravy where id = ?");
+        table.setDeleteQuery("opravy");
     }
 
         private static void showError(Thread t, Throwable e) {

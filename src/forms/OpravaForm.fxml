@@ -76,7 +76,7 @@
         </VBox>
         <HBox alignment="CENTER" prefHeight="37.0" prefWidth="636.0">
           <children>
-            <Button mnemonicParsing="false" text="Dokonči opravu">
+            <Button mnemonicParsing="false" onAction="#dokoncitOpravuAction" text="Dokonči opravu">
               <font>
                 <Font name="System Bold" size="16.0" />
               </font>

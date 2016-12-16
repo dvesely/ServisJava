@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -49,6 +51,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 import oracle.jdbc.OracleTypes;
 import utils.App;
+import utils.ItemIdValue;
 import utils.JSON;
 import utils.Validator;
 
@@ -70,7 +73,7 @@ public class OpravaFormController implements Initializable, IFormController {
     private TextArea popisOpravy;
 
     @FXML
-    private ComboBox<String> typKomponent;
+    private ComboBox<ItemIdValue> typKomponent;
 
     @FXML
     private TextField cenaZaOpravu;
@@ -100,7 +103,7 @@ public class OpravaFormController implements Initializable, IFormController {
         cStmt.setString("p_popis_opravy", popisOpravy.getText());
         cStmt.setInt("p_cena", valid.toInteger(cenaZaOpravu.getText(), "Cena"));
         cStmt.setInt("p_pocitace_id", 1);
-        cStmt.setInt("p_typy_komponent_id", typKomponent.getSelectionModel().getSelectedIndex() + 1);
+        cStmt.setInt("p_typy_komponent_id", typKomponent.getSelectionModel().getSelectedItem().getId());
 
         valid.validate();
 
@@ -110,30 +113,34 @@ public class OpravaFormController implements Initializable, IFormController {
         cStmt.close();
 
         //vlozeni obrazků do databaze
+        CallableStatement cs;
         for (Obrazek o : fotky) {
-            //DateFormat df = new DateFormat;
-            cStmt = DB.prepareCall("pck_opravy.uprav_obrazek", 6);
-            cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
+            if (o.neniZDatabaze == true) { // fotky ktere se maji uploadnout
+                cs = DB.prepareCall("pck_opravy.uprav_obrazek", 5);
+                cs.registerOutParameter("p_result", OracleTypes.CLOB);
+                BufferedImage bImage = SwingFXUtils.fromFXImage(o.obr.getImage(), null);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(bImage, o.format, baos);
+                baos.close();
+                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
-            cStmt.setNull("p_id", OracleTypes.NULL);
-            BufferedImage bImage = SwingFXUtils.fromFXImage(o.obr.getImage(), null);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(bImage, o.format, baos);
-            baos.close();
-
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-
-            cStmt.setBlob("p_data", bais);
-            cStmt.setInt("p_oprava_id", opravaId);
-            cStmt.setString("p_format", o.format);
-            cStmt.setInt("p_velikost", o.velikost);
-            cStmt.execute();
-            JSON.checkStatus(cStmt.getString("p_result"));
-            cStmt.close();
+                cs.setBlob("p_data", bais);
+                cs.setInt("p_oprava_id", opravaId);
+                cs.setString("p_format", o.format);
+                cs.setInt("p_velikost", o.velikost);
+                cs.execute();
+                JSON.checkStatus(cs.getString("p_result"));
+                cs.close();
+            } else if (o.smazano == true) { // fotky ktere se maji smazat z db
+                cs = DB.prepareCall("pck_opravy.smaz_obrazek", 2);
+                cs.registerOutParameter("p_result", OracleTypes.CLOB);
+                cs.setInt("p_id", o.id);
+                cs.execute();
+                JSON.checkStatus(cs.getString("p_result"));
+                cs.close();
+            }
         }
-        OracleConnector.getConnection().commit();
-        //App.setComboItem(JSON.getAsInt("id"));
+        DB.commit();
         App.closeActive();
     }
 
@@ -150,10 +157,10 @@ public class OpravaFormController implements Initializable, IFormController {
             String format = file.getName().substring(file.getName().length() - 3);
             int velikost = Math.round(file.length() / 1024); // v Kb
             Date datum = new Date();
-            Obrazek o = new Obrazek(format, velikost, datum, imageView);            
+            Obrazek o = new Obrazek(format, velikost, datum, imageView);
             imageView.setOnMouseEntered(prejetiMysi(o));
             imageView.setOnMouseClicked(praveKlikMysi(o));
-            
+
             fotky.add(o);
             aktualizujFotky();
         }
@@ -181,7 +188,12 @@ public class OpravaFormController implements Initializable, IFormController {
                     deleteImg.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent event) {
-                            fotky.remove(o);
+
+                            if (o.neniZDatabaze == true) {
+                                fotky.remove(o);
+                            } else {
+                                o.smazano = true;
+                            }
                             fotkyHBox.getChildren().remove(o.obr);
                         }
                     });
@@ -195,11 +207,11 @@ public class OpravaFormController implements Initializable, IFormController {
     private void naplnComboBox() {
         try {
             PreparedStatement ps = OracleConnector.getConnection()
-                    .prepareStatement("select nazev from typy_komponent order by id");
+                    .prepareStatement("select id, nazev from typy_komponent order by id");
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
-                typKomponent.getItems().add(rs.getString(1));
+                typKomponent.getItems().add(new ItemIdValue(rs.getInt(1), rs.getString(2)));
             }
             typKomponent.getSelectionModel().selectFirst();
         } catch (SQLException ex) {
@@ -208,40 +220,49 @@ public class OpravaFormController implements Initializable, IFormController {
     }
 
     private void aktualizujFotky() throws IOException {
-        if (idOpravy != null) {
-            //oprava jiz existuje....
-            try {
-                PreparedStatement ps = OracleConnector.getConnection()
-                        .prepareStatement("select data, format, velikost, datum_nahrani"
-                                + " from v_obrazky where opravy_id = ?");
-                ps.setInt(1, idOpravy);
-
-                ResultSet rs = ps.executeQuery();
-                ImageView img;
-
-                while (rs.next()) {
-                    img = new ImageView(SwingFXUtils.toFXImage(ImageIO.read(rs.getBlob(1).getBinaryStream()), null));
-                    fotky.add(new Obrazek(rs.getString(2), rs.getInt(3), rs.getDate(4), img));
-                }
-            } catch (SQLException ex) {
-                ErrorAlert.show("Chyba při aktualizaci fotek.", ex);
-            }
-
-        }
-        //obrazky ktere nejsou jeste v databazi pridame na konec
         fotkyHBox.getChildren().clear();
         for (Obrazek obr : fotky) {
-            fotkyHBox.getChildren().add(obr.obr);
+            if (obr.smazano != true) {
+                fotkyHBox.getChildren().add(obr.obr);
+            }
+        }
+    }
+
+    private void nactiFotkyZDatabaze() throws IOException, SQLException {
+        if (idOpravy != null) {
+            //oprava jiz existuje....
+            PreparedStatement ps = OracleConnector.getConnection()
+                    .prepareStatement("select id, data, format, velikost, datum_nahrani"
+                            + " from obrazky where opravy_id = ?");
+            ps.setInt(1, idOpravy);
+
+            ResultSet rs = ps.executeQuery();
+            ImageView img;
+
+            while (rs.next()) {
+                img = new ImageView(SwingFXUtils.toFXImage(ImageIO.read(rs.getBlob(2).getBinaryStream()), null));
+                Obrazek o = new Obrazek(rs.getInt(1), rs.getString(3), rs.getInt(4), rs.getDate(5), img, false);
+                img.setOnMouseEntered(prejetiMysi(o));
+                img.setOnMouseClicked(praveKlikMysi(o));
+                fotky.add(o);
+            }
+
         }
     }
 
     @Override
     public void setData(Map<String, String> data) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        idOpravy = new Integer(data.get("id"));  
+        idOpravy = new Integer(data.get("id"));
         popisOpravy.setText(data.get("popis_opravy"));
         cenaZaOpravu.setText(data.get("cena"));
-        typKomponent.getSelectionModel().select(data.get("typy_komponent_id"));
+        typKomponent.getSelectionModel().select(new ItemIdValue(data.get("typy_komponent_id")));
+        try {
+            nactiFotkyZDatabaze();
+            aktualizujFotky();
+        } catch (IOException | SQLException ex) {
+            System.out.println(ex);
+            ErrorAlert.show("Fotky se nepovedlo načíst z databáze.");
+        }
     }
 
     private class Obrazek {
@@ -250,12 +271,24 @@ public class OpravaFormController implements Initializable, IFormController {
         int velikost;
         Date datumNahrani;
         ImageView obr;
+        boolean neniZDatabaze = true;
+        boolean smazano = false;
+        int id = 0;
 
         public Obrazek(String format, int velikost, Date datumNahrani, ImageView obr) {
             this.format = format;
             this.velikost = velikost;
             this.datumNahrani = datumNahrani;
             this.obr = obr;
+        }
+
+        public Obrazek(int id, String format, int velikost, Date datumNahrani, ImageView obr, boolean bol) {
+            this.id = id;
+            this.format = format;
+            this.velikost = velikost;
+            this.datumNahrani = datumNahrani;
+            this.obr = obr;
+            this.neniZDatabaze = bol;
         }
     }
 }
