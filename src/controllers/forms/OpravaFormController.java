@@ -139,9 +139,8 @@ public class OpravaFormController implements Initializable, IFormController {
                 JSON.checkStatus(cs.getString("p_result"));
                 cs.close();
             }
-        }
-        DB.commit();
-        App.closeActive();
+        }        
+        App.closeActiveForm(true);
     }
 
     @FXML
