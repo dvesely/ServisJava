@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utils;
+package app;
 
 import alerts.ErrorAlert;
 import controllers.forms.IFormController;
 import controllers.TabulkaController;
 import database.DB;
-import database.OracleConnector;
 import exceptions.NoWindowToClose;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -20,11 +19,13 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.WindowEvent;
 import table.Table;
+import user.User;
+import util.FormWindow;
+import util.ItemIdValue;
 
 /**
  *
@@ -33,8 +34,7 @@ import table.Table;
 public class App {
 
     public static final String TITLE_PREFIX = "Servis počítačů";
-    
-    private static int userId;
+
     private static Stage primaryStage;
     private static Stage activeStage;
     private static FXMLLoader loader;
@@ -42,21 +42,19 @@ public class App {
     //private static Stack<Stage> stackForms = new Stack<>();//fronta aktivnich formularu        
     
     
-    public static void setPrimaryStage(Stage stage) {
+    public static void setPrimaryStage(Stage stage) {        
         primaryStage = stage;
         activeStage = stage;
+        addOnFocusEvent(stage);
     }
     
     public static Stage createView(String sceneName) {
-        return createView(sceneName, true);
-    }
-    
-    public static Stage createView(String viewName, boolean setOwner) {
         try {
-            setLoader("/views/"+viewName+"View.fxml");                
+            setLoader("/views/"+sceneName+"View.fxml");                
             Stage stage = new Stage();            
-            if (setOwner) stage.initOwner(activeStage);
-            stage.setScene(new Scene(loader.load()));            
+            stage.initOwner(activeStage);
+            stage.setScene(new Scene(loader.load()));
+            stage.initModality(Modality.APPLICATION_MODAL);
             addOnFocusEvent(stage);
             return stage;
         }catch (IOException e){};
@@ -78,23 +76,22 @@ public class App {
     public static FormWindow createForm(String formName, Map<String, String> data) {
         try {
             setLoader("/forms/"+formName+"Form.fxml");    
-            FormWindow stage = new FormWindow(activeStage);
-            stage.setScene(new Scene(loader.load()));                        
-            addOnFocusEvent(stage);            
+            FormWindow form = new FormWindow(activeStage);
+            form.setScene(new Scene(loader.load()));
+            addOnFocusEvent(form);            
             if (data != null)//inicializace dat pro upravu zaznamu                             
-                ((IFormController)getController()).setData(data);
-            
-            //stackForms.push(stage);            
-            return stage;
+                ((IFormController)getController()).setData(data);        
+            return form;
+        }catch (IOException ex) {
+            ErrorAlert.show("Chyba při načítání controlleru. ("+formName+"FormController)");
         }catch ( Exception ex) {
-            new ErrorAlert("Formulář '"+formName+"' nebyl nalezen.").showAndWait();                             
-            ex.printStackTrace();
-            return null;
-        }
+            ErrorAlert.show("Formulář '"+formName+"' nebyl nalezen.", ex);                        
+        }        
+        return null;
     }
     
     public static Table showTable(String title, String formName, String query) throws SQLException {
-        Stage stage = App.createView("Tabulka", false);                                
+        Stage stage = App.createView("Tabulka");                                
         Table table = ((TabulkaController)getController()).initTable(title, formName, query); 
         stage.show();        
         App.setTitle(title);
@@ -128,16 +125,21 @@ public class App {
         activeStage.close();        
     }
     /**
-     * Zavre aktualni formular a nastavi confirm
+     * Zavre aktualni formular a
+     * pokud formular nebyl potvrzenej,
+     * tak se zmeny vrati na posledni savepoint
      * @param confirm - parametr, ktery oznacuje zda byl formular potvrzen nebo ne
+     * @throws exceptions.NoWindowToClose - pousi se zavrit okno, ktere neni formular
      */
     public static void closeActiveForm(boolean confirm) throws NoWindowToClose {
         FormWindow form = getActiveForm();
         if (form == null) {
             throw new NoWindowToClose("Akivni okno neni formular.");            
         }
-        form.setConfirm(confirm);
-        form.close();        
+        if (!confirm) {//formular nebyl potvrzen, rollback do saveppointu
+            form.rollback();
+        }
+        form.close();
     }
     
     public static Scene getScene() {
@@ -176,24 +178,16 @@ public class App {
         
     }
     
-    public static int getUserId() {
-        return userId;
-    }
-    
-    public static void setUserId(int userId) {
-        App.userId = userId;
-    }    
-    
     private static void setLoader(String relativePath) {
         loader = new FXMLLoader(App.class.getResource(relativePath));    
     }
     
     private static void addOnFocusEvent(Stage stage) {
         stage.focusedProperty().addListener(
-            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {                    
-                Stage focused = (Stage)((ReadOnlyBooleanProperty)observable).getBean();
-                App.activeStage = focused;
-        });
+            (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {                
+                Stage focused = (Stage)((ReadOnlyBooleanProperty)observable).getBean();                                
+                App.activeStage = focused;                               
+        });        
     }
     
     private App() {};   

@@ -5,11 +5,10 @@
  */
 package controllers;
 
-import database.OracleConnector;
+import database.DB;
 import exceptions.NotFoundException;
 import java.net.URL;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.CallableStatement;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import javafx.concurrent.Task;
@@ -20,7 +19,11 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
-import utils.App;
+import oracle.jdbc.OracleTypes;
+import app.App;
+import privileges.Pozice;
+import user.User;
+import util.JSON;
 
 /**
  *
@@ -49,6 +52,8 @@ public class LoginController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         loginState(false);
         App.setTitle("Přihlášení");
+        usernameTF.setText("sobotalu");
+        passwordTF.setText("1234");
     }
 
     @FXML
@@ -75,44 +80,37 @@ public class LoginController implements Initializable {
 
     private void setErrorMessage(String message) {
         errorLabel.setText(message);
+        loginState(false);
     }
 
-    private void onLogin(int userId) {
-        App.setScene("Table");
-        App.setTitle("Tabulka");
-        App.setUserId(userId);
+    private void onLogin(UserInfo userInfo) {
+        User.set(userInfo.id, userInfo.pozice);
+        App.setScene("App");        
+        App.setTitle("Tabulka");           
     }
 
     class LoginThread extends Thread {
         
         public LoginThread() {            
-            super(new Task<Integer>() {
+            super(new Task<UserInfo>() {
                 @Override
-                protected Integer call() throws Exception {
+                protected UserInfo call() throws Exception {
                     String username = usernameTF.getText();
-                    String password = passwordTF.getText();
-                    Integer userID = null;
+                    String password = passwordTF.getText();                    
 
                     if (username == null || password == null) {
                         throw new NotFoundException("Musíte zadat uživatelské jméno a heslo.");
                     }
 
                     loginState(true);
-                    PreparedStatement ps = OracleConnector.getConnection()
-                            .prepareStatement("select usr_id from users where usr_name = ? and usr_pwd = md5hash(?)");
-                    ps.setString(1, usernameTF.getText());
-                    ps.setString(2, passwordTF.getText());
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        userID = rs.getObject(1, Integer.class);
-                    }
-                    ps.close();
-                    loginState(false);
-                    if (userID == null) {
-                        throw new NotFoundException("Zadali jste nesprávné údaje.");
-                    }
-
-                    return userID;
+                    CallableStatement cStmt = DB.prepareCall("pck_personal.prihlas_personal", 3);
+                    cStmt.setString(1, usernameTF.getText());
+                    cStmt.setString(2, passwordTF.getText());                    
+                    cStmt.registerOutParameter(3, OracleTypes.CLOB);
+                    cStmt.execute();
+                    JSON.checkStatus(cStmt.getString(3));                    
+                    
+                    return new UserInfo(JSON.getAsInt("id"), JSON.getAsInt("pozice_id"));
                 }
 
                 @Override
@@ -124,16 +122,24 @@ public class LoginController implements Initializable {
                 @Override
                 protected void succeeded() {
                     super.succeeded(); //To change body of generated methods, choose Tools | Templates.                    
-                    App.setScene("App");
                     try {
-                        App.setUserId(get());
-                    }catch (ExecutionException | InterruptedException e){};                    
+                        onLogin(get());
+                    }catch (InterruptedException | ExecutionException e){};                    
                 }                
                 
             });
             setDaemon(true);             
         }
-
     }
+    
+    class UserInfo {
+        
+        private final int id;
+        private final Pozice pozice;
 
+        public UserInfo(int id, int pozice_id) throws NotFoundException {
+            this.id = id;
+            pozice = Pozice.valueOf(pozice_id);
+        }
+    }
 }

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane id="AnchorPane" prefHeight="517.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forms.PocitacFormController">
+   <children>
+      <StackPane layoutX="34.0" prefHeight="566.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="20.0">
+               <children>
+                  <Label text="Počítač">
+                     <font>
+                        <Font size="41.0" />
+                     </font>
+                  </Label>
+                  <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="176.0" spacing="10.0">
+                     <children>
+                        <Label prefHeight="17.0" prefWidth="50.0" text="Zakázka:" />
+                        <ComboBox fx:id="zakazkaCombo" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  <VBox prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <Label maxWidth="1.7976931348623157E308" text="Popis závady:" />
+                        <TextArea fx:id="popisTA" minHeight="10.0" />
+                     </children>
+                  </VBox>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                     <children>
+                        <Label text="Přibližná cena:" />
+                        <TextField fx:id="pribliznaCenaTF" HBox.hgrow="ALWAYS" />
+                        <Label text="Kč" />
+                     </children>
+                  </HBox>
+                  <VBox fx:id="opravyVBox" minHeight="150.0" visible="false">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="20.0">
+                           <children>
+                              <Label text="Opravy:" />
+                              <Button mnemonicParsing="false" onAction="#pridejOpravuAction" text="Přidat" />
+                           </children>
+                           <VBox.margin>
+                              <Insets bottom="5.0" top="10.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <ListView fx:id="opravyLW" maxHeight="100.0">
+                           <contextMenu>
+                              <ContextMenu>
+                                 <items>
+                                    <MenuItem mnemonicParsing="false" onAction="#upravOpravuAction" text="Uprav" />
+                                    <MenuItem mnemonicParsing="false" onAction="#odeberOpravuAction" text="Odeber" />
+                                 </items>
+                              </ContextMenu>
+                           </contextMenu>
+                        </ListView>
+                        <HBox alignment="CENTER" prefHeight="0.0" prefWidth="300.0">
+                           <children>
+                              <Label maxWidth="1.7976931348623157E308" text="Celková cena:" HBox.hgrow="ALWAYS" />
+                              <Label fx:id="celkovaCenaLabel" layoutX="124.0" layoutY="10.0" maxWidth="1.7976931348623157E308" text="800" />
+                              <Label layoutX="274.0" layoutY="10.0" maxWidth="1.7976931348623157E308" text="Kč">
+                                 <padding>
+                                    <Insets left="10.0" />
+                                 </padding>
+                              </Label>
+                           </children>
+                           <padding>
+                              <Insets top="5.0" />
+                           </padding>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  <HBox alignment="CENTER" prefHeight="0.0" prefWidth="300.0" spacing="30.0">
+                     <children>
+                        <Button mnemonicParsing="false" onAction="#potvrdAction" text="OK" />
+                        <Button mnemonicParsing="false" onAction="#stornujAction" text="Storno" />
+                     </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="150.0" right="150.0" top="10.0" />
+         </padding>
+      </StackPane>
+   </children>
+</AnchorPane>

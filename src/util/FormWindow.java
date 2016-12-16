@@ -3,10 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utils;
+package util;
 
 import database.DB;
+import database.OracleConnector;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -17,31 +19,33 @@ import javafx.stage.StageStyle;
  */
 public class FormWindow extends Stage {
 
-    private boolean confirm = false;
+    private Savepoint point;    
     
     public FormWindow(Stage parent) {
         super(StageStyle.UTILITY);
         initOwner(parent);
-        initModality(Modality.WINDOW_MODAL);        
-    }
-
-    public void setConfirm(boolean confirm) {
-        this.confirm = confirm;
+        initModality(Modality.WINDOW_MODAL);  
+        setOnCloseRequest(event -> {
+            rollback();
+        });
+        try {
+            point = OracleConnector.getConnection().setSavepoint();
+        }catch (SQLException ex) {
+            System.out.println("Nebyl ulozen savepoint.");
+        }
     }
     
-    public boolean confirm() {
-        return confirm;
+    public void rollback() {
+        if (point != null) {            
+            DB.rollback(point);            
+        }
     }
 
     @Override
     public void showAndWait() {
         super.showAndWait(); //To change body of generated methods, choose Tools | Templates.
-        if (confirm) {
-            DB.commit();
-        }else {
-            DB.rollback();
-        }
     }
+    
     
     
 }

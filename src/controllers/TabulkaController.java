@@ -11,7 +11,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import table.Table;
-import utils.App;
+import app.App;
+import database.DB;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 
 /**
  * FXML Controller class
@@ -24,6 +27,12 @@ public class TabulkaController implements Initializable {
     private Label nadpisLabel;
     @FXML
     private TableView tableView;
+    @FXML
+    private ContextMenu menu;
+    @FXML
+    private MenuItem editItem;
+    @FXML
+    private MenuItem deleteItem;
         
     private Table table = null;   
     
@@ -31,7 +40,8 @@ public class TabulkaController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        
+        //deleteItem.setVisible(false);
+        //editItem.setVisible(false);
     }    
     
     public Table initTable(String title, String formName, String query) throws SQLException {        
@@ -41,17 +51,30 @@ public class TabulkaController implements Initializable {
     }
     
     @FXML
-    public void add(ActionEvent ev) throws SQLException {        
-        App.createForm(table.getFormName()).showAndWait(); 
+    public void addAction(ActionEvent ev) throws SQLException {        
+        App.createForm(table.getFormName()).showAndWait();
+        DB.commit();
         table.refreshData();
     }
     
     @FXML
-    public void edit(ActionEvent ev) throws SQLException {
+    public void editAction(ActionEvent ev) throws SQLException {        
         Map<String, String> data = table.getSelectedRow();
-        if (data != null) {
-            App.createForm(table.getFormName(), data).showAndWait();
-        }
+        if (data == null) 
+            throw new NullPointerException("Nebyl vybrán žádný záznam pro úpravu.");
+        
+        App.createForm(table.getFormName(), data).showAndWait();
+        DB.commit();        
+        table.refreshData();
+    }
+    
+    @FXML
+    public void deleteAction(ActionEvent ev) throws SQLException {
+        Map<String, String> data = table.getSelectedRow();
+        if (data == null) 
+            throw new NullPointerException("Nebyl vybrán žádný záznam pro smazání.");
+        table.deleteRow();
+        DB.commit();        
         table.refreshData();
     }
 }

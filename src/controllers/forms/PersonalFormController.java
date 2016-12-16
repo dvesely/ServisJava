@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controllers.forms;
 
 import alerts.ErrorAlert;
@@ -22,13 +17,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 import oracle.jdbc.OracleTypes;
-import utils.App;
-import utils.ItemIdValue;
-import utils.JSON;
-import utils.Length;
-import utils.Validator;
+import app.App;
+import util.ItemIdValue;
+import util.JSON;
+import util.Length;
+import util.Validator;
 
 /**
  * FXML Controller class
@@ -62,6 +56,7 @@ public class PersonalFormController implements Initializable, IFormController {
     
     private Integer idZamestnance;
     
+    @Override
     public void initialize(URL url, ResourceBundle rb) {
         FormControl.addLengthLimit(jmenoTF, Length.JMENO);
         FormControl.addLengthLimit(prijmeniTF, Length.PRIJMENI);
@@ -110,8 +105,7 @@ public class PersonalFormController implements Initializable, IFormController {
         
         cStmt.execute();
         JSON.checkStatus(cStmt.getString("p_result"));        
-        cStmt.close();            
-        OracleConnector.getConnection().commit();
+        cStmt.close();                    
         App.setComboItem(JSON.getAsInt("id"));
         App.closeActiveForm(true);
     }

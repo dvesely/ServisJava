@@ -9,6 +9,7 @@ import java.sql.CallableStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -31,6 +32,17 @@ public class DB {
             return true;
         }catch (SQLException ex) {
             System.err.println("Commit: "+ex.getMessage());
+            return false;
+        }
+    }
+    
+    public static boolean rollback(Savepoint point) {
+        System.out.println("Rollback to point");
+        try {
+            OracleConnector.getConnection().rollback(point);
+            return true;
+        }catch (SQLException ex) {
+            System.err.println("Rollback to point: "+ex.getMessage());
             return false;
         }
     }

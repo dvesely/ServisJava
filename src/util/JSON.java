@@ -1,4 +1,4 @@
-package utils;
+package util;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -42,7 +42,7 @@ public class JSON {
         JsonObject object = decode(json);
         
         if (!object.has("status")) {
-            throw new SQLException("Nastala neznamá chyba. Nebyla definována proměnná 'status'.");                    
+            return;                    
         }
         if (!object.get("status").getAsString().equals("OK")) {
             if (object.has("message")) {
@@ -64,7 +64,10 @@ public class JSON {
      * @return 
      */
     private static String extractMessage(String oraMessage) {
-        return oraMessage.substring(0, oraMessage.indexOf("\n"))
-                .replaceFirst("(ORA-[0-9]+:\\s)", "");
+        int endLine = oraMessage.indexOf("\n");
+        if (endLine > 0) {//bylo nalezeno odradkovani
+            oraMessage = oraMessage.substring(0, endLine);//odriznuti po odradkovani
+        }
+        return oraMessage.replaceFirst("(ORA-[0-9]+:\\s)", "");//odstraneni prefixu chyby s cislem
     }
 }

@@ -19,13 +19,12 @@ public class ErrorAlert extends AbstractAlert {
     }
     
     public static void show(String message, Exception ex) {
-        new ErrorAlert(message).show();
         if (ex != null) {
             System.err.println(message+":\n"+ex.getMessage());
         }else {
             System.err.println(message);
         }
-        
+        new ErrorAlert(message).showAndWait();
     }
     
     public ErrorAlert(String message) {

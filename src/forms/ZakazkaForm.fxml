@@ -8,7 +8,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="331.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forms.ZakazkaFormController">
+<AnchorPane id="AnchorPane" prefHeight="509.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forms.ZakazkaFormController">
    <children>
       <StackPane layoutX="34.0" layoutY="-115.0" prefHeight="515.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-0.0">
          <children>
@@ -56,6 +56,29 @@
                         <ComboBox fx:id="clientCombo" maxWidth="1.7976931348623157E308" onAction="#comboAction" prefHeight="25.0" prefWidth="16.0" GridPane.columnIndex="1" />
                      </children>
                   </GridPane>
+                  <VBox>
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="20.0">
+                           <children>
+                              <Label text="Počítače:" />
+                              <Button mnemonicParsing="false" onAction="#pridejPocitacAction" text="Přidat" />
+                           </children>
+                           <VBox.margin>
+                              <Insets bottom="5.0" top="10.0" />
+                           </VBox.margin>
+                        </HBox>
+                        <ListView fx:id="pocitaceLW" maxHeight="100.0">
+                           <contextMenu>
+                              <ContextMenu>
+                                <items>
+                                    <MenuItem mnemonicParsing="false" onAction="#upravPocitacAction" text="Uprav" />
+                                    <MenuItem mnemonicParsing="false" onAction="#odeberPocitacAction" text="Odeber" />
+                                </items>
+                              </ContextMenu>
+                           </contextMenu>
+                        </ListView>
+                     </children>
+                  </VBox>
                   <HBox alignment="CENTER" prefHeight="0.0" prefWidth="300.0" spacing="30.0">
                      <children>
                         <Button mnemonicParsing="false" onAction="#potvrdAction" text="OK" />

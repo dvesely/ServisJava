@@ -10,8 +10,8 @@ import java.sql.CallableStatement;
 import oracle.jdbc.OracleTypes;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import utils.App;
-import utils.JSON;
+import app.App;
+import util.JSON;
 
 /**
  *

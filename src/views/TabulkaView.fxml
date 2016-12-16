@@ -9,7 +9,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" fx:id="anchor" prefHeight="600.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TabulkaController">
+<AnchorPane id="AnchorPane" fx:id="anchor" prefHeight="500.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.TabulkaController">
     <children>
       <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -20,17 +20,7 @@
             </Label>
             <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#add" prefWidth="70.0" text="Přidat">
-                     <padding>
-                        <Insets bottom="5.0" top="5.0" />
-                     </padding>
-                  </Button>
-                  <Button mnemonicParsing="false" onAction="#edit" prefWidth="70.0" text="Upravit">
-                     <padding>
-                        <Insets bottom="5.0" top="5.0" />
-                     </padding>
-                  </Button>
-                  <Button layoutX="78.0" layoutY="20.0" mnemonicParsing="false" onAction="#edit" prefWidth="70.0" text="Detail">
+                  <Button mnemonicParsing="false" onAction="#addAction" prefWidth="70.0" text="Přidat">
                      <padding>
                         <Insets bottom="5.0" top="5.0" />
                      </padding>
@@ -43,7 +33,15 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </padding>
             </HBox>
-            <TableView fx:id="tableView" VBox.vgrow="ALWAYS" />
+            <TableView fx:id="tableView" VBox.vgrow="ALWAYS">
+               <contextMenu>
+                  <ContextMenu fx:id="menu">
+                    <items>
+                      <MenuItem fx:id="editItem" mnemonicParsing="false" onAction="#editAction" text="Upravit" />
+                        <MenuItem fx:id="deleteItem" mnemonicParsing="false" onAction="#deleteAction" text="Smazat" />
+                    </items>
+                  </ContextMenu>
+               </contextMenu></TableView>
          </children>
       </VBox>
    </children>

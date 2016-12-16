@@ -20,11 +20,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 import oracle.jdbc.OracleTypes;
-import utils.App;
-import utils.ItemIdValue;
-import utils.JSON;
-import utils.Length;
-import utils.Validator;
+import app.App;
+import util.JSON;
+import util.Length;
+import util.Validator;
 
 /**
  * FXML Controller class
@@ -103,8 +102,7 @@ public class KlientFormController implements Initializable, IFormController {
         
         cStmt.execute();        
         JSON.checkStatus(cStmt.getString("p_result"));        
-        cStmt.close();            
-        OracleConnector.getConnection().commit();
+        cStmt.close();                    
         App.setComboItem(JSON.getAsInt("id"));
         App.closeActiveForm(true);
     }

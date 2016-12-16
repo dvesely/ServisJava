@@ -5,7 +5,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import javafx.scene.control.ComboBox;
-import utils.ItemIdValue;
+import util.ItemIdValue;
 
 
 public class DBComboBox {

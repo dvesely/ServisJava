@@ -2,6 +2,7 @@ package table;
 
 import database.DB;
 import database.OracleConnector;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -11,9 +12,12 @@ import java.util.Map;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
+import oracle.jdbc.OracleTypes;
+import util.JSON;
 
 public final class Table {
     
@@ -21,7 +25,7 @@ public final class Table {
     
     private String query;
     private String fromQuery;//dotaz pro urcity radek podle ID
-    private String tableDelete;//tabulka v ktere se bude mazat podle ID
+    private String deleteProcedure;//tabulka v ktere se bude mazat podle ID
     
     private String formName;
     
@@ -68,22 +72,24 @@ public final class Table {
     public boolean deleteRow() throws SQLException {
         int id = getSelectedId();
         if (id != -1) {
-            if (tableDelete == null) {
-                throw new NullPointerException("Dotaz pro smazani dat neni nastaveny.");
+            if (deleteProcedure == null) {
+                throw new NullPointerException("Procedura pro smazani zaznamu neni nastavena.");
             }
-            PreparedStatement ps = OracleConnector.getConnection()
-                    .prepareStatement("delete from "+tableDelete+" where id = ?");
-            ps.setInt(1, id);            
-            boolean r = ps.execute();
-            ps.close();
-            return r;
+            CallableStatement cStmt = DB.prepareCall(deleteProcedure, 2);
+            cStmt.setInt(1, id);
+            cStmt.registerOutParameter(2, OracleTypes.CLOB);                       
+            cStmt.execute();
+            String result = cStmt.getString(2);
+            cStmt.close();
+            JSON.checkStatus(result);
+            return true;
         }
         return false;
     }
     
     public void addColumn(String name) {        
         TableColumn<Row, String> tc = new TableColumn(name);   
-        //tc.setSortable(false);
+        tc.setSortable(false);
         tc.setCellValueFactory(new PropertyValueFactory(name));
         tc.setCellValueFactory(param -> {
             int index = param.getTableView().getColumns().indexOf(param.getTableColumn());
@@ -97,7 +103,8 @@ public final class Table {
                 
             }
             return null;
-        });        /*              
+        });  
+        /*              
         tc.setCellFactory(new Callback<TableColumn<Row, String>, TableCell<Row, String>>() {
             @Override
             public TableCell<Row, String> call(TableColumn<Row, String> param) {
@@ -129,8 +136,8 @@ public final class Table {
         this.fromQuery = rowQuery;
     }
 
-    public void setDeleteQuery(String removeQuery) {
-        this.tableDelete = removeQuery;
+    public void setDeleteProcedure(String nameProcedure) {
+        this.deleteProcedure = nameProcedure;
     }
     
     private ResultSet createColumns() throws SQLException {
@@ -167,7 +174,7 @@ public final class Table {
         tableView.getItems().clear();
     }
     
-    public class Row {
+    class Row {
 
         Object[] data;
         
@@ -209,18 +216,6 @@ public final class Table {
             }
             return true;
         }
-    }
-    
-    public class Column {
-
-        String name;
-        Class type;
-
-        public Column(String name, Class type) {
-            this.name = name;
-            this.type = type;
-        }
-        
     }
 }
 

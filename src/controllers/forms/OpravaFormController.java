@@ -15,7 +15,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
@@ -26,8 +25,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -48,12 +45,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageOutputStream;
 import oracle.jdbc.OracleTypes;
-import utils.App;
-import utils.ItemIdValue;
-import utils.JSON;
-import utils.Validator;
+import app.App;
+import util.ItemIdValue;
+import util.JSON;
+import util.Validator;
 
 /**
  * FXML Controller class
@@ -184,17 +180,13 @@ public class OpravaFormController implements Initializable, IFormController {
                 if (event.getButton() == MouseButton.SECONDARY) {
                     ContextMenu cmenu = new ContextMenu();
                     MenuItem deleteImg = new MenuItem("Vymaž obrázek");
-                    deleteImg.setOnAction(new EventHandler<ActionEvent>() {
-                        @Override
-                        public void handle(ActionEvent event) {
-
-                            if (o.neniZDatabaze == true) {
-                                fotky.remove(o);
-                            } else {
-                                o.smazano = true;
-                            }
-                            fotkyHBox.getChildren().remove(o.obr);
+                    deleteImg.setOnAction((ActionEvent event1) -> {
+                        if (o.neniZDatabaze == true) {
+                            fotky.remove(o);
+                        } else {
+                            o.smazano = true;
                         }
+                        fotkyHBox.getChildren().remove(o.obr);
                     });
                     cmenu.getItems().add(deleteImg);
                     cmenu.show(o.obr, event.getScreenX(), event.getScreenY());

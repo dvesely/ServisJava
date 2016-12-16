@@ -6,13 +6,13 @@
 package app;
 
 import alerts.ErrorAlert;
+import database.Query;
 import exceptions.ValidException;
 import java.sql.SQLException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import table.Table;
-import utils.App;
 
 /**
  *
@@ -25,13 +25,18 @@ public class Main extends Application {
         
         Thread.setDefaultUncaughtExceptionHandler(Main::showError);
         
-        App.setPrimaryStage(stage);
-        //stage.setMaximized(true);        
+        App.setPrimaryStage(stage);             
         App.setScene("App");
-        //stage.show();     
-        Table table = App.showTable("Opravy", "Oprava", "select * from v_opravy");
-        table.setRowQuery("select * from v_opravy where id = ?");
-        table.setDeleteQuery("opravy");
+        stage.show();
+        /*
+        Table table = App.showTable("Personál", "Personal", "select * from v_personal");
+        table.setRowQuery(Query.PERSONAL_FORM);
+        table.setDeleteProcedure("pck_personal.smaz_personal");
+        */
+        /*
+       Table table = App.showTable("Počítače", "Pocitac", "select * from v_pocitace");
+        table.setRowQuery(Query.POCITACE_FORM);
+        table.setDeleteProcedure("pck_pocitace.smaz_pocitac");*/
     }
 
         private static void showError(Thread t, Throwable e) {
