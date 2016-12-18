@@ -6,13 +6,14 @@
 package app;
 
 import alerts.ErrorAlert;
-import database.Query;
+import static app.App.setPrimaryStage;
 import exceptions.ValidException;
 import java.sql.SQLException;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
-import table.Table;
+import privileges.Pozice;
+import user.User;
 
 /**
  *
@@ -23,18 +24,18 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {        
         
-        Thread.setDefaultUncaughtExceptionHandler(Main::showError);
-        
+        Thread.setDefaultUncaughtExceptionHandler(Main::showError);        
         App.setPrimaryStage(stage);             
-        App.setScene("App");
+        App.setScene("Login");
         stage.show();
+        //App.showForm("Zakazka");
         /*
-        Table table = App.showTable("Personál", "Personal", "select * from v_personal");
+        Table table = App.createTable("Personál", "Personal", "select * from v_personal");
         table.setRowQuery(Query.PERSONAL_FORM);
         table.setDeleteProcedure("pck_personal.smaz_personal");
         */
         /*
-       Table table = App.showTable("Počítače", "Pocitac", "select * from v_pocitace");
+       Table table = App.createTable("Počítače", "Pocitac", "select * from v_pocitace");
         table.setRowQuery(Query.POCITACE_FORM);
         table.setDeleteProcedure("pck_pocitace.smaz_pocitac");*/
     }
@@ -57,6 +58,7 @@ public class Main extends Application {
         System.err.println(e.getMessage());
         if (e instanceof SQLException) {              
             alert.setHeaderText("Chyba databáze");
+            e.printStackTrace();
         }else if (e instanceof ValidException) {
             alert.setHeaderText("Validace formuláře");
         }else {

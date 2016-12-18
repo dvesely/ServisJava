@@ -5,28 +5,22 @@
  */
 package privileges;
 
+import user.User;
+import static privileges.Pozice.MANAGER;
+
 /**
  *
  * @author Dominik
  */
 public class Opravneni {
     
-    public static boolean pristupPouze(Pozice vlastni, Pozice... pozice) {
+    public static boolean pristupPouze(Pozice... pozice) {
+        Pozice userPozice = User.getPozice();
+        if (userPozice == null)
+            throw new NullPointerException("Uživatel nemá nastavenou pozici.");
         for (Pozice p : pozice) {
-            if (vlastni == p) return true;
+            if (userPozice == p) return true;
         }
         return false;
-    }
-    
-    public static boolean maPristup(Pozice vlastniPozice, Pozice nejnizsiPoziceSPristupem) {        
-        switch (vlastniPozice) {
-            case GENERALNI_MANAGER:
-                return true;
-            case MANAGER_OBCHODNIKU:
-                
-                
-        }
-        return false;
-    }
-    
+    }    
 }

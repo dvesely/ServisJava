@@ -6,11 +6,11 @@
 package database;
 
 import java.sql.CallableStatement;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Savepoint;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -94,8 +94,10 @@ public class DB {
                 }
             }
             Map<String, String> row = new HashMap<>();
-            for (int i = 0; i < count; i++) {
-                row.put(columnNames[i],rs.getString(i+1));
+            for (int i = 0; i < count; i++) {                                
+                String str = rs.getString(i+1);
+                if (str == null) str = "";
+                row.put(columnNames[i], str);
             }
             result.add(row);
         }        
@@ -118,8 +120,10 @@ public class DB {
         return result;
     }
     
-    public static LocalDate StringToLocalDate(String date) {
-        return LocalDate.parse(date);
+    public static Clob createClob(String string) throws SQLException {
+        Clob clob = OracleConnector.getConnection().createClob();
+        clob.setString(1, string);
+        return clob;
     }
     
 }

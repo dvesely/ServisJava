@@ -20,7 +20,7 @@
             </Label>
             <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="200.0" spacing="20.0">
                <children>
-                  <Button mnemonicParsing="false" onAction="#addAction" prefWidth="70.0" text="Přidat">
+                  <Button fx:id="addButton" mnemonicParsing="false" onAction="#addAction" prefWidth="70.0" text="Přidat">
                      <padding>
                         <Insets bottom="5.0" top="5.0" />
                      </padding>
@@ -37,6 +37,8 @@
                <contextMenu>
                   <ContextMenu fx:id="menu">
                     <items>
+                        <MenuItem fx:id="selectItem" mnemonicParsing="false" onAction="#selectAction" text="Převzít" />
+                        <MenuItem fx:id="doneItem" mnemonicParsing="false" onAction="#doneAction" text="Hotovo" />
                       <MenuItem fx:id="editItem" mnemonicParsing="false" onAction="#editAction" text="Upravit" />
                         <MenuItem fx:id="deleteItem" mnemonicParsing="false" onAction="#deleteAction" text="Smazat" />
                     </items>

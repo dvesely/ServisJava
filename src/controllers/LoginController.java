@@ -5,6 +5,7 @@
  */
 package controllers;
 
+import alerts.ErrorAlert;
 import database.DB;
 import exceptions.NotFoundException;
 import java.net.URL;
@@ -52,7 +53,7 @@ public class LoginController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         loginState(false);
         App.setTitle("Přihlášení");
-        usernameTF.setText("sobotalu");
+        usernameTF.setText("manazer");
         passwordTF.setText("1234");
     }
 
@@ -84,9 +85,21 @@ public class LoginController implements Initializable {
     }
 
     private void onLogin(UserInfo userInfo) {
-        User.set(userInfo.id, userInfo.pozice);
-        App.setScene("App");        
-        App.setTitle("Tabulka");           
+        try {
+            User.set(
+                userInfo.id, 
+                usernameTF.getText(), 
+                userInfo.celeJmeno, 
+                Pozice.valueOf(userInfo.idPozice), 
+                userInfo.nazevPozice
+            );
+        }catch (NotFoundException ex){
+            ErrorAlert.show(
+                String.format("Pozice s ID '%d' nebyla nalezena.", userInfo.idPozice),
+                ex);
+        }
+        
+        App.setScene("App");                
     }
 
     class LoginThread extends Thread {
@@ -107,10 +120,15 @@ public class LoginController implements Initializable {
                     cStmt.setString(1, usernameTF.getText());
                     cStmt.setString(2, passwordTF.getText());                    
                     cStmt.registerOutParameter(3, OracleTypes.CLOB);
-                    cStmt.execute();
-                    JSON.checkStatus(cStmt.getString(3));                    
-                    
-                    return new UserInfo(JSON.getAsInt("id"), JSON.getAsInt("pozice_id"));
+                    cStmt.execute();                    
+                    JSON.checkStatus(cStmt.getString(3));     
+                    System.out.println(cStmt.getString(3));
+                    return new UserInfo(
+                            JSON.getAsInt("id"),
+                            JSON.getAsString("cele_jmeno"),
+                            JSON.getAsString("pozice_nazev"),
+                            JSON.getAsInt("pozice_id")
+                    );
                 }
 
                 @Override
@@ -133,13 +151,17 @@ public class LoginController implements Initializable {
     }
     
     class UserInfo {
-        
-        private final int id;
-        private final Pozice pozice;
+        int id;
+        String celeJmeno;
+        String nazevPozice;
+        int idPozice;
 
-        public UserInfo(int id, int pozice_id) throws NotFoundException {
+        public UserInfo(int id, String celeJmeno, String nazevPozice, int idPozice) {
             this.id = id;
-            pozice = Pozice.valueOf(pozice_id);
+            this.celeJmeno = celeJmeno;
+            this.nazevPozice = nazevPozice;
+            this.idPozice = idPozice;
         }
+        
     }
 }

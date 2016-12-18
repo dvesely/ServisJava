@@ -8,18 +8,17 @@ package controllers.forms;
 import alerts.ErrorAlert;
 import app.App;
 import database.DB;
-import database.DBComboBox;
 import database.OracleConnector;
 import database.Query;
 import exceptions.NoWindowToClose;
 import exceptions.ValidException;
 import java.net.URL;
+import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ResourceBundle;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.ComboBox;
 import java.util.Map;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
@@ -30,7 +29,12 @@ import util.ItemIdValue;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import javafx.scene.control.ListView;
+import oracle.jdbc.OracleTypes;
+import privileges.Opravneni;
+import privileges.Pozice;
 import tridy.Pocitac;
+import util.FormWindow;
+import util.JSON;
 import util.Validator;
 
 /**
@@ -40,9 +44,10 @@ import util.Validator;
  */
 public class PocitacFormController implements Initializable, IFormController {
 
-    
     @FXML
-    private ComboBox<ItemIdValue> zakazkaCombo;    
+    private Label pocitacIdLabel;
+    @FXML
+    private Label zakazkaLabel;
     @FXML
     private TextArea popisTA;
     @FXML
@@ -54,37 +59,46 @@ public class PocitacFormController implements Initializable, IFormController {
     @FXML
     private ListView<ItemIdValue> opravyLW;
     
-    private DBComboBox zakazka;
-    
-    private Integer pocitacId;
-    private Pocitac pocitac;
-    boolean editace = false;
+    private Integer zakazkaId;
+    private Integer pocitacId;  
+    private boolean editace = false;
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        zakazka = new DBComboBox(zakazkaCombo);
-        try {
-            zakazka.init("select pocitace.id, pocitace.id||'('||jmeno||' '||prijmeni||')' "
-            + "from pocitace "
-            + "join personal on personal.id = personal_id");
-        }catch (SQLException ex){
-            ErrorAlert.show("Chyba pri vyberu zakazek z databaze.");
-        };        
+        opravyVBox.setVisible(editace);
+        if (Opravneni.pristupPouze(Pozice.TECHNIK)) {
+            popisTA.setEditable(false);
+            pribliznaCenaTF.setEditable(false);
+        }
     }    
 
     @FXML
-    public void potvrdAction(ActionEvent ev) throws NoWindowToClose, ValidException {
+    public void potvrdAction(ActionEvent ev) throws NoWindowToClose, ValidException, SQLException {
         Validator valid = new Validator();
         int cena = valid.toInteger(pribliznaCenaTF.getText(), "Přibližná cena");
         
         valid.validate();
-        if (editace || pocitac == null) {
+        if (!editace) {//editace nebo prace s pocitacem pres zakazku
             Pocitac.setPocitac(new Pocitac(popisTA.getText(), cena));
-        }else {
-            pocitac.setPopis(popisTA.getText());
-            pocitac.setCena(cena);
+        }else {//jedna se o upravu v tabulce pocitace
+            CallableStatement cStmt = DB.prepareCall("pck_pocitace.pridej_uprav_pocitac", 5);
+            cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
+            cStmt.setInt("p_id", pocitacId);
+            cStmt.setClob("p_popis_zavady", DB.createClob(popisTA.getText()));
+            cStmt.setInt("p_priblizna_cena", Integer.parseInt(pribliznaCenaTF.getText()));
+            cStmt.setInt("p_zakazky_id", zakazkaId);            
+            cStmt.execute();
+            try {
+                JSON.checkStatus(cStmt.getString("p_result"));
+            }catch (SQLException ex) {  
+                try {
+                    cStmt.close();                
+                }catch (SQLException sqlex) {
+                    throw ex;
+                }
+                throw ex;
+            }
         }
-            
         App.closeActiveForm(true);
     }
     
@@ -95,7 +109,9 @@ public class PocitacFormController implements Initializable, IFormController {
     
     @FXML
     public void pridejOpravuAction(ActionEvent ev) throws SQLException {
-        App.createForm("Oprava").showAndWait();
+        FormWindow form = App.createForm("Oprava");        
+        ((OpravaFormController)App.getController()).setPocitacId(pocitacId);
+        form.showAndWait();
         refreshOpravy();
     }
     
@@ -112,11 +128,13 @@ public class PocitacFormController implements Initializable, IFormController {
     
     @FXML
     public void odeberOpravuAction(ActionEvent ev) throws SQLException {
-        PreparedStatement ps = OracleConnector.getConnection()
-                .prepareStatement("delete from opravy where id = ?");
-        ps.setInt(1, getSelectId());
-        ps.execute();
-        ps.close();
+        CallableStatement cStmt = DB.prepareCall("pck_opravy.smaz_opravu", 2);
+        cStmt.setInt(1, getSelectId());        
+        cStmt.registerOutParameter(2, OracleTypes.CLOB);
+        cStmt.execute();
+        String result = cStmt.getString(2);
+        cStmt.close();
+        JSON.checkStatus(result);
         refreshOpravy();
     }
     
@@ -129,35 +147,40 @@ public class PocitacFormController implements Initializable, IFormController {
     
     public void init(Pocitac pocitac) {
         popisTA.setText(pocitac.getPopis());
-        pribliznaCenaTF.setText(String.valueOf(pocitac.getCena()));
-        this.pocitac = pocitac;
+        pribliznaCenaTF.setText(String.valueOf(pocitac.getCena()));        
     }
     
     public void refreshOpravy() throws SQLException {
-        if (pocitacId == null) return;
+        if (!editace) return;
         LinkedList<ItemIdValue> list = new LinkedList<>();
+        int celkovaCena = 0;
         
         PreparedStatement ps = OracleConnector.getConnection().prepareStatement(
-                "select id, typ_komponenty||' ('||cena||' Kč)' value "
+                "select id, typ_komponenty||' ('||cena||' Kč)' value, cena "
                 + "from v_opravy where pocitace_id = ?");
          ps.setInt(1, pocitacId);   
          ResultSet rs = ps.executeQuery();         
          for (Map<String, String> oprava : DB.resultSetToListOfMapString(rs)) {             
              list.add(new ItemIdValue(Integer.parseInt(oprava.get("id")), oprava.get("value")));
+             celkovaCena += Integer.parseInt(oprava.get("cena"));
          }
          opravyLW.getItems().clear();
          opravyLW.getItems().setAll(list);
+         celkovaCenaLabel.setText(String.valueOf(celkovaCena));
     }
     
     @Override
-    public void setData(Map<String, String> data) {   
+    public void setData(Map<String, String> data) {           
         editace = true;
-        opravyVBox.setVisible(true);
+        zakazkaId = Integer.parseInt(data.get("zakazky_id"));
         pocitacId = Integer.parseInt(data.get("id"));
         
+        zakazkaLabel.setText("#"+zakazkaId);
+        pocitacIdLabel.setText("#"+pocitacId);
         popisTA.setText(data.get("popis_zavady"));
-        pribliznaCenaTF.setText(data.get("priblizna_cena"));
+        pribliznaCenaTF.setText(String.valueOf(data.get("priblizna_cena")));
         
+        opravyVBox.setVisible(true);
         try {
             refreshOpravy();
         }catch (SQLException ex) {

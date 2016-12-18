@@ -7,6 +7,7 @@ package util;
 
 import exceptions.ValidException;
 import java.util.LinkedList;
+import java.util.List;
 import javafx.scene.control.ComboBox;
 
 /**
@@ -21,6 +22,11 @@ public class Validator {
     
     public void addMessage(String message) {
         errorMessages.add(message);
+    }
+    
+    public void minListSize(List list, int size, String message) {
+        if (list.size() < size)
+            addMessage(message);
     }
     
     public int toInteger(String string, String message) {
@@ -49,11 +55,12 @@ public class Validator {
         return this;
     }
     
-    public int comboBoxToInteger(ComboBox<ItemIdValue> combo) {
+    public int comboBoxToInteger(ComboBox<ItemIdValue> combo, String name) {
         ItemIdValue item = combo.getSelectionModel().getSelectedItem();
         if (item != null) {            
             return item.getId();
-        }
+        }        
+        addMessage(name + " je povinné pole.");
         return -1;
     }
     

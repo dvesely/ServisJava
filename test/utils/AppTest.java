@@ -5,18 +5,13 @@
  */
 package utils;
 
-import database.OracleConnector;
-import java.awt.image.BufferedImage;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import oracle.jdbc.OracleTypes;
 import org.junit.Test;
 
 /**
@@ -29,11 +24,9 @@ public class AppTest {
     }
 
     @Test
-    public void testDatum() throws ParseException{
-        DateFormat df = new SimpleDateFormat("YYYY-MM-dd", Locale.getDefault());
-        
-            System.out.println(df.parse("1995-03-19 00:00:00.0"));
-        
+    public void testDatum() throws ParseException {
+        Format formatter = new SimpleDateFormat("dd. MM. YYYY");
+        System.out.println(formatter.format(Calendar.getInstance().getTime()));
     }
     
     @Test

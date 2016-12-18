@@ -6,24 +6,20 @@
 package app;
 
 import alerts.ErrorAlert;
-import controllers.forms.IFormController;
 import controllers.TabulkaController;
-import database.DB;
+import controllers.forms.IFormController;
 import exceptions.NoWindowToClose;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.input.MouseEvent;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import table.Table;
-import user.User;
 import util.FormWindow;
 import util.ItemIdValue;
 
@@ -90,11 +86,10 @@ public class App {
         return null;
     }
     
-    public static Table showTable(String title, String formName, String query) throws SQLException {
-        Stage stage = App.createView("Tabulka");                                
-        Table table = ((TabulkaController)getController()).initTable(title, formName, query); 
-        stage.show();        
-        App.setTitle(title);
+    public static Table createTable(String title, String formName, String query) throws SQLException {
+        App.createView("Tabulka").setTitle(App.createTitle(title));                                        
+        Table table = new Table((TabulkaController)getController(), title, formName, query);              
+        
         return table;
     }
     
@@ -168,14 +163,16 @@ public class App {
         return loader.getController();
     }
     
-    public static void setTitle(String title) {
+    public static String createTitle (String title) {
         if (title == null) {
-            activeStage.setTitle(TITLE_PREFIX);
-        }
-        else {
-            activeStage.setTitle(TITLE_PREFIX + " - "+ title);
+            return TITLE_PREFIX;
         }
         
+        return TITLE_PREFIX + " - "+ title;
+    }
+    
+    public static void setTitle(String title) {
+        activeStage.setTitle(createTitle(title));
     }
     
     private static void setLoader(String relativePath) {

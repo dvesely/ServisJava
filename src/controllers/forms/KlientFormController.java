@@ -94,7 +94,11 @@ public class KlientFormController implements Initializable, IFormController {
         cStmt.setInt("p_psc", valid.toInteger(pscTF.getText(), "PSČ"));
         cStmt.setString("p_zeme", zemeTF.getText());                        
         cStmt.setInt("p_telefon", valid.toInteger(telefonTF.getText(), "Telefon"));
-        cStmt.setString("p_email", emailTF.getText());                        
+        if (emailTF.getText().equals("")) {
+           cStmt.setNull("p_email", OracleTypes.VARCHAR);
+        }else {
+            cStmt.setString("p_email", emailTF.getText());  
+        }
         
         cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
         

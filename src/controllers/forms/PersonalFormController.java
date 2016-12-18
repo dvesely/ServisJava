@@ -92,8 +92,12 @@ public class PersonalFormController implements Initializable, IFormController {
         cStmt.setString("p_jmeno", jmenoTF.getText());
         cStmt.setString("p_prijmeni", prijmeniTF.getText());
         cStmt.setInt("p_telefon", valid.toInteger(telefonTF.getText(), "Špatný formát telefonu.", true));
-        cStmt.setString("p_email", emailTF.getText());  
-        cStmt.setInt("p_pozice_id", valid.comboBoxToInteger(poziceCombo));  
+        if (emailTF.getText().equals("")) {
+           cStmt.setNull("p_email", OracleTypes.VARCHAR);
+        }else {
+            cStmt.setString("p_email", emailTF.getText());  
+        }
+        cStmt.setInt("p_pozice_id", valid.comboBoxToInteger(poziceCombo, "Pozice"));  
         cStmt.setString("p_ulice", uliceTF.getText());  
         cStmt.setInt("p_cislo_popisne", valid.toInteger(cisloTF.getText(), "Číslo popisné"));  
         cStmt.setString("p_mesto", mestoTF.getText());  
@@ -116,8 +120,7 @@ public class PersonalFormController implements Initializable, IFormController {
     }
 
     @Override
-    public void setData(Map<String, String> data) { 
-        System.out.println(data);
+    public void setData(Map<String, String> data) {         
         idZamestnance = new Integer(data.get("id"));
         
         jmenoTF.setText(data.get("jmeno"));

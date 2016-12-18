@@ -15,7 +15,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.TextField;
 import app.App;
 import database.DBComboBox;
 import database.OracleConnector;
@@ -26,9 +25,23 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import util.ItemIdValue;
 import database.Query;
+import exceptions.ValidException;
+import java.sql.CallableStatement;
+import java.sql.Clob;
+import java.sql.ResultSet;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.LinkedList;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import oracle.jdbc.OracleTypes;
 import tridy.Pocitac;
+import user.User;
 import util.FormWindow;
+import util.JSON;
+import util.StringDate;
+import util.Validator;
 
 /**
  * FXML Controller class
@@ -38,39 +51,82 @@ import util.FormWindow;
 public class ZakazkaFormController implements Initializable, IFormController {
 
     @FXML
-    private ComboBox<ItemIdValue> clientCombo;
+    private ComboBox<ItemIdValue> clientCombo;    
+    //@FXML
+    //private DatePicker zacatekDatePicker;    
     @FXML
-    private TextField pribliznaCenaTF;
-    @FXML
-    private DatePicker zacatekDatePicker;    
+    private TextField zacatekTF;
     @FXML
     private DatePicker konecDatePicker;  
     @FXML
-    private ListView<Pocitac> pocitaceLW;
+    private ListView<Pocitac> pocitaceLW;    
     
     @FXML
     private Button upravButton;
     
     private DBComboBox clients;
     
+    private Integer zakazkaId;
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         clients = new DBComboBox(clientCombo);        
         upravButton.setDisable(true);
-        zacatekDatePicker.setValue(LocalDate.now());     
+        
+        Format formatter = new SimpleDateFormat(StringDate.FORMAT);
+        zacatekTF.setText(formatter.format(Calendar.getInstance().getTime()));
         konecDatePicker.setValue(LocalDate.now());
         try {            
             clients.init("select id, jmeno||' '||prijmeni||'('||telefon||')' from klienti");            
+            refreshPocitace();
         }catch (SQLException ex) {
-            new ErrorAlert("Chyba na pri plneni seznamu klientu.\n"+ex.getMessage()).showAndWait();            
-        }
-        pridejPocitac(new Pocitac("Neco neco", 1000));
-        pridejPocitac(new Pocitac("Bebe neco", 24564));
-        pridejPocitac(new Pocitac("Neco Keke", 3001));
+            new ErrorAlert("Chyba na pri inicializaci formulare zakazky.\n"+ex.getMessage()).showAndWait();            
+        }        
     }    
     
     @FXML
-    public void potvrdAction(ActionEvent ev) throws NoWindowToClose {
+    public void potvrdAction(ActionEvent ev) throws NoWindowToClose, SQLException, ValidException {
+        Validator valid = new Validator();
+        CallableStatement cStmt = DB.prepareCall("pck_zakazky.pridejZakazku", 4);
+        cStmt.setInt("p_personal_id", User.getId());        
+        cStmt.setInt("p_klient_id", valid.comboBoxToInteger(clientCombo, "Klient"));
+        cStmt.setDate("p_datum_priblizne_dokonceni", StringDate.LocalDateToSQLDate(konecDatePicker.getValue()));
+        cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
+       
+        valid.minListSize(pocitaceLW.getItems(), 1, "Zakázka musí obsahovat alespoň 1 počítač.");
+        
+        try {
+            valid.validate();
+        }catch (ValidException ex)  {
+            cStmt.close();
+            throw ex;
+        }
+        cStmt.execute();
+        String result = cStmt.getString("p_result");
+        JSON.checkStatus(result);
+        int idZakazky = JSON.getAsInt("id");
+        cStmt = DB.prepareCall("pck_pocitace.pridej_uprav_pocitac", 5);
+        cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
+        cStmt.setNull("p_id", OracleTypes.NUMBER);
+        //pridani pocitacu        
+        for (Pocitac pocitac : pocitaceLW.getItems()) {                        
+            cStmt.setClob("p_popis_zavady", DB.createClob(pocitac.getPopis()));
+            cStmt.setInt("p_priblizna_cena", pocitac.getCena());
+            cStmt.setInt("p_zakazky_id", idZakazky);
+            //cStmt.setNull("p_personal_id", OracleTypes.NUMBER);
+            cStmt.execute();
+            try {
+                JSON.checkStatus(cStmt.getString("p_result"));
+            }catch (SQLException ex) {  
+                try {
+                    cStmt.close();                
+                }catch (SQLException sqlex) {
+                    throw ex;
+                }
+                throw ex;
+            }            
+        }
+        
         App.closeActiveForm(true);
     }
     
@@ -112,11 +168,35 @@ public class ZakazkaFormController implements Initializable, IFormController {
     
     @FXML
     public void odeberPocitacAction(ActionEvent ev) {
-        System.out.println(pocitaceLW.getSelectionModel().getSelectedIndex());
+        
     }
     
     private void pridejPocitac(Pocitac pocitac) {
         if (pocitac != null) pocitaceLW.getItems().add(pocitac);
+    }
+    
+    private void refreshPocitace() {
+        if (zakazkaId == null) return;
+        
+        LinkedList<Pocitac> list = new LinkedList<>();
+        try {
+            PreparedStatement ps = OracleConnector.getConnection().prepareStatement(
+                "select id, popis_zavady, priblizna_cena "
+                + "from v_pocitace where zakazky_id = ?");
+            ps.setInt(1, zakazkaId);   
+            ResultSet rs = ps.executeQuery();         
+            for (Map<String, String> oprava : DB.resultSetToListOfMapString(rs)) {             
+                list.add(new Pocitac(
+                        Integer.parseInt(oprava.get("id")),
+                        oprava.get("popis_zavady"), 
+                        Integer.parseInt(oprava.get("priblizna_cena"))));
+            }
+        }catch (SQLException ex) {
+            ErrorAlert.show("Chyba při vyběru počítačů z databáze.", ex);
+        }
+        
+         pocitaceLW.getItems().clear();
+         pocitaceLW.getItems().setAll(list);
     }
     
     private void otevriFormular(boolean uprava) {        
@@ -129,7 +209,7 @@ public class ZakazkaFormController implements Initializable, IFormController {
             pocitaceLW.refresh();
         }else {
             form.showAndWait();
-            Pocitac pocitac = Pocitac.getPocitac();        
+            Pocitac pocitac = Pocitac.removePocitac();        
             if (pocitac != null) {
                 pridejPocitac(pocitac);
             }
@@ -138,13 +218,13 @@ public class ZakazkaFormController implements Initializable, IFormController {
     
     @Override
     public void setData(Map<String, String> data) {   
-        System.out.println(data);
-        //System.out.println(df.format(data.get("datum_prijmuti")));        
-        upravButton.setDisable(false);
-        pribliznaCenaTF.setText(data.get("priblizna_cena"));
-        
-        //zacatekDatePicker.setValue(DB.StringToLocalDate(data.get("datum_prijmuti")));
-        //konecDatePicker.setValue(DB.StringToLocalDate(data.get("datum_priblizne_dokonceni")));
+//        zakazkaId = Integer.parseInt(data.get("id"));
+//        upravButton.setDisable(false); 
+//        System.out.println(zakazkaId);
+//        clients.select(new ItemIdValue(data.get("klienti_id")));                               
+//        zacatekTF.setText(StringDate.formatDate(data.get("datum_prijmuti"), StringDate.FORMAT));
+//        konecDatePicker.setValue(StringDate.StringToLocalDate(data.get("datum_priblizne_dokonceni")));
+//        refreshPocitace();
     }
     
 }

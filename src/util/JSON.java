@@ -1,11 +1,10 @@
 package util;
 
+import app.App;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
-import jdk.nashorn.internal.runtime.regexp.RegExp;
 
 
 public class JSON {
@@ -39,22 +38,27 @@ public class JSON {
      * @throws SQLException 
      */
     public static void checkStatus(String json) throws SQLException {        
-        JsonObject object = decode(json);
-        
+        if (json == null) return;
+        JsonObject object = decode(json);        
         if (!object.has("status")) {
             return;                    
         }
         if (!object.get("status").getAsString().equals("OK")) {
+            String message;
+            FormWindow form = App.getActiveForm();
+            
             if (object.has("message")) {
-                String message = object.get("message").getAsString();
+                message = object.get("message").getAsString();
                 if (object.get("code").getAsInt() < -20000) {//uzivateslka vyjimka
                     message = extractMessage(message);
-                }
-                throw new SQLException(message);            
-            }else {
-                throw new SQLException("Nastala chyba na serveru. (chybí info o chybě)");
+                }                          
+            }else {                
+               message = "Nastala chyba na serveru. (chybí info o chybě)";
             }
-            
+            if (form != null) {
+                form.rollback();
+            }
+            throw new SQLException(message);
         }   
     }
     

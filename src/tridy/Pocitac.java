@@ -1,9 +1,5 @@
 package tridy;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
 public class Pocitac {
     
     private static Pocitac pocitac;
@@ -12,7 +8,7 @@ public class Pocitac {
      * Vrati posledni ulozeny pocitac a smaze ho ze tridy
      * @return 
      */
-    public static Pocitac getPocitac() {
+    public static Pocitac removePocitac() {
         Pocitac p = pocitac;
         pocitac = null;
         return p;
@@ -22,17 +18,26 @@ public class Pocitac {
         Pocitac.pocitac = pocitac;
     }
     
+    private int id;
     private String popis;
     private int cena;
     //private LinkedList<Oprava> opravy;
     
     
     public Pocitac(String popis, int cena) {
-       
+       this(-1, popis, cena);
+    }
+    
+    public Pocitac(int id, String popis, int cena) {
+        this.id = id;
         this.popis = popis;
         this.cena = cena;        
     }
 
+    public int getId() {
+        return id;
+    }
+    
     public void setPopis(String popis) {
         this.popis = popis;
     }
@@ -59,6 +64,9 @@ public class Pocitac {
 */
     @Override
     public String toString() {
-        return popis + " ("+cena+" Kč)";
+        if (id < 0) {
+            return String.format("#Nový (%d Kč)", cena);
+        }
+        return String.format("#%d (%d Kč)", id, cena);
     }
 }

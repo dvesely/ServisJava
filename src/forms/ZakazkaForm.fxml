@@ -8,55 +8,44 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane id="AnchorPane" prefHeight="509.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forms.ZakazkaFormController">
+<AnchorPane id="AnchorPane" prefHeight="457.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.forms.ZakazkaFormController">
    <children>
       <StackPane layoutX="34.0" layoutY="-115.0" prefHeight="515.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-0.0">
          <children>
             <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
                <children>
-                  <Label text="Zakazka">
+                  <Label text="Zakázka">
                      <font>
                         <Font size="41.0" />
                      </font>
                   </Label>
-                  <GridPane hgap="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+                  <GridPane hgap="5.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="210.0" prefWidth="400.0" VBox.vgrow="ALWAYS">
                     <columnConstraints>
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="366.0" minWidth="0.0" prefWidth="83.0" />
-                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="489.0" minWidth="10.0" prefWidth="193.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="366.0" minWidth="0.0" prefWidth="63.0" />
+                      <ColumnConstraints hgrow="SOMETIMES" maxWidth="489.0" minWidth="10.0" prefWidth="201.0" />
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="489.0" minWidth="10.0" prefWidth="127.0" />
                     </columnConstraints>
                     <rowConstraints>
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                     </rowConstraints>
                      <children>
-                        <Label text="Klient:" />
-                        <Label text="Přibližná cena:" GridPane.rowIndex="1" />
-                        <Label text="Příjmutí:" GridPane.rowIndex="2" />
-                        <Label text="Dokončení:" GridPane.rowIndex="3" />
+                        <Label text="Příjmutí:" GridPane.rowIndex="1" />
+                        <Label maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Přibližné okončení:" wrapText="true" GridPane.rowIndex="2" />
                         <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="2">
                            <children>
                               <Button minWidth="50.0" mnemonicParsing="false" onAction="#vytvorKlientaAction" text="Nový" />
                               <Button fx:id="upravButton" layoutX="280.0" layoutY="24.0" minWidth="50.0" mnemonicParsing="false" onAction="#upravKlientaAction" text="Upravit" />
                            </children>
                         </HBox>
-                        <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                           <children>
-                              <TextField fx:id="pribliznaCenaTF" HBox.hgrow="ALWAYS" />
-                              <Label text="Kč" />
-                           </children>
-                           <padding>
-                              <Insets right="10.0" />
-                           </padding>
-                        </HBox>
-                        <DatePicker fx:id="zacatekDatePicker" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                        <DatePicker fx:id="konecDatePicker" layoutX="96.0" layoutY="128.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                        <DatePicker fx:id="konecDatePicker" layoutX="96.0" layoutY="128.0" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                         <ComboBox fx:id="clientCombo" maxWidth="1.7976931348623157E308" onAction="#comboAction" prefHeight="25.0" prefWidth="16.0" GridPane.columnIndex="1" />
+                        <TextField fx:id="zacatekTF" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                        <Label text="Klient:" />
                      </children>
                   </GridPane>
-                  <VBox>
+                  <VBox prefHeight="189.0" prefWidth="400.0">
                      <children>
                         <HBox alignment="CENTER_LEFT" spacing="20.0">
                            <children>
@@ -67,7 +56,7 @@
                               <Insets bottom="5.0" top="10.0" />
                            </VBox.margin>
                         </HBox>
-                        <ListView fx:id="pocitaceLW" maxHeight="100.0">
+                        <ListView fx:id="pocitaceLW" maxHeight="1.7976931348623157E308">
                            <contextMenu>
                               <ContextMenu>
                                 <items>

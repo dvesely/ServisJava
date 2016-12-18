@@ -58,7 +58,7 @@ import util.Validator;
  */
 public class OpravaFormController implements Initializable, IFormController {
 
-    private static final int MAX_SIRKA = 300;
+    private static final int MAX_SIRKA = 300;    
 
     @FXML
     private HBox fotkyHBox;
@@ -75,19 +75,24 @@ public class OpravaFormController implements Initializable, IFormController {
     private TextField cenaZaOpravu;
 
     private LinkedList<Obrazek> fotky = new LinkedList<>();
-    private Integer idOpravy;
+    private Integer idOpravy;    
+    private Integer pocitacId;
+
+    public void setPocitacId(Integer pocitaceId) {
+        this.pocitacId = pocitaceId;
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         App.setTitle(null);
         typKomponent.getItems().clear();
-        naplnComboBox();
+        naplnComboBox();        
     }
 
     @FXML
     public void dokoncitOpravuAction(ActionEvent ev) throws SQLException, ValidException, NoWindowToClose, IOException {
         Validator valid = new Validator();
-        CallableStatement cStmt = DB.prepareCall("pck_opravy.uprav_opravu", 6);
+        CallableStatement cStmt = DB.prepareCall("pck_opravy.pridej_uprav_opravu", 6);
         cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
         cStmt.registerOutParameter("p_id", OracleTypes.NUMBER);
         if (idOpravy == null) {//insert
@@ -98,7 +103,7 @@ public class OpravaFormController implements Initializable, IFormController {
 
         cStmt.setString("p_popis_opravy", popisOpravy.getText());
         cStmt.setInt("p_cena", valid.toInteger(cenaZaOpravu.getText(), "Cena"));
-        cStmt.setInt("p_pocitace_id", 1);
+        cStmt.setInt("p_pocitace_id", pocitacId);
         cStmt.setInt("p_typy_komponent_id", typKomponent.getSelectionModel().getSelectedItem().getId());
 
         valid.validate();
@@ -138,26 +143,32 @@ public class OpravaFormController implements Initializable, IFormController {
         }        
         App.closeActiveForm(true);
     }
+    
+    public void stornujAction(ActionEvent ev) throws NoWindowToClose {
+        App.closeActiveForm(false);
+    }
 
     @FXML
-    public void nahratFotkuAction(ActionEvent ev) throws IOException {
+    public void nahratFotkuAction(ActionEvent ev) throws IOException {        
         FileChooser fch = new FileChooser();
         fch.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pouze obrázky", "*.jpg", "*.bmp", "*.png"));
         File file = fch.showOpenDialog(App.getActive());
 
         if (file != null) {
-            Image image = new Image(file.toURI().toString(), MAX_SIRKA, scrollPane.getHeight(), false, false);
-            ImageView imageView = new ImageView(image);
-            imageView.setViewport(Rectangle2D.EMPTY);
+            Image image = new Image(file.toURI().toString());
+            ImageView imageView = new ImageView(image);            
             String format = file.getName().substring(file.getName().length() - 3);
             int velikost = Math.round(file.length() / 1024); // v Kb
             Date datum = new Date();
             Obrazek o = new Obrazek(format, velikost, datum, imageView);
+            imageView.setFitHeight(scrollPane.getHeight());       
+            //imageView.setFitWidth(MAX_SIRKA);
+            imageView.setPreserveRatio(true);
             imageView.setOnMouseEntered(prejetiMysi(o));
             imageView.setOnMouseClicked(praveKlikMysi(o));
 
             fotky.add(o);
-            aktualizujFotky();
+            aktualizujFotky();            
         }
     }
 
@@ -214,6 +225,7 @@ public class OpravaFormController implements Initializable, IFormController {
         fotkyHBox.getChildren().clear();
         for (Obrazek obr : fotky) {
             if (obr.smazano != true) {
+                //ImageView obr = obr.obr;
                 fotkyHBox.getChildren().add(obr.obr);
             }
         }
@@ -242,11 +254,12 @@ public class OpravaFormController implements Initializable, IFormController {
     }
 
     @Override
-    public void setData(Map<String, String> data) {
+    public void setData(Map<String, String> data) {        
         idOpravy = new Integer(data.get("id"));
+        pocitacId = new Integer(data.get("pocitace_id"));
         popisOpravy.setText(data.get("popis_opravy"));
         cenaZaOpravu.setText(data.get("cena"));
-        typKomponent.getSelectionModel().select(new ItemIdValue(data.get("typy_komponent_id")));
+        typKomponent.getSelectionModel().select(new ItemIdValue(data.get("typy_komponent_id")));        
         try {
             nactiFotkyZDatabaze();
             aktualizujFotky();

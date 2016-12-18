@@ -19,12 +19,18 @@ import javafx.stage.StageStyle;
  */
 public class FormWindow extends Stage {
 
+    private static final int WIDTH = 700;
+    private static final int HEIGHT = 500;
+    
     private Savepoint point;    
     
     public FormWindow(Stage parent) {
         super(StageStyle.UTILITY);
         initOwner(parent);
         initModality(Modality.WINDOW_MODAL);  
+        setWidth(WIDTH);
+        setHeight(HEIGHT);
+        setResizable(false);
         setOnCloseRequest(event -> {
             rollback();
         });
