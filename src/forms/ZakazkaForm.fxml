@@ -68,6 +68,13 @@
                         </ListView>
                      </children>
                   </VBox>
+                  <HBox alignment="CENTER" layoutX="10.0" layoutY="422.0" prefHeight="0.0" prefWidth="300.0" spacing="5.0">
+                     <children>
+                        <Label maxWidth="1.7976931348623157E308" text="Celkem:" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="celkovaCenaLabel" layoutX="196.0" layoutY="10.0" text="0" HBox.hgrow="ALWAYS" />
+                        <Label layoutX="382.0" layoutY="10.0" text="Kč" />
+                     </children>
+                  </HBox>
                   <HBox alignment="CENTER" prefHeight="0.0" prefWidth="300.0" spacing="30.0">
                      <children>
                         <Button mnemonicParsing="false" onAction="#potvrdAction" text="OK" />

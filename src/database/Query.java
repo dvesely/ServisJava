@@ -15,7 +15,7 @@ public class Query {
     public static final String OPRAVY_FORM = "select id,typy_komponent_id,cena,popis_opravy,pocitace_id from v_opravy where id = ?";
     public static final String PERSONAL_FORM = "select * from v_personal where id = ?";
     public static final String POCITACE_FORM = "select * from v_pocitace where id = ?";
-    public static final String ZAKAZKY_FORM = "select id,klienti_id,cena,"
+    public static final String ZAKAZKY_FORM = "select id,klienti_id,cena_za_opravy,"
             + "datum_prijmuti,datum_priblizne_dokonceni "
             + "from v_zakazky where id = ?";
     

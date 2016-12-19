@@ -75,12 +75,11 @@ public class AppController implements Initializable {
             + "from v_zakazky";        
         
         Table table = App.createTable("Zakázky", "Zakazka", select);        
-        table.setDeleteProcedure("pck_zakazky.smazZakazku");
+        //table.setDeleteProcedure("pck_zakazky.smazZakazku");
+        table.setInsertable(true);
         if (Opravneni.pristupPouze(Pozice.OBCHODNIK)) {
             table.setOnlyOwnRow(true);
         }
-        table.setInsertable(true);
-        //table.setUpdateQuery(Query.ZAKAZKY_FORM, );
         table.show();
     }
     
@@ -112,8 +111,7 @@ public class AppController implements Initializable {
                 + " from v_pocitace_v_oprave";
         if (Opravneni.pristupPouze(Pozice.TECHNIK)) {//omezit na vlastni opravy
             select += " where personal_id = "+User.getId();
-        }
-        System.out.println(select);
+        }        
         Table table = App.createTable("Počítače v opravě", "Pocitac", 
                 select);
         table.setUpdateQuery(Query.POCITACE_FORM);    //povoleni upravy    

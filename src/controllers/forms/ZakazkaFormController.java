@@ -27,12 +27,12 @@ import util.ItemIdValue;
 import database.Query;
 import exceptions.ValidException;
 import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.ResultSet;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedList;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import oracle.jdbc.OracleTypes;
@@ -60,19 +60,20 @@ public class ZakazkaFormController implements Initializable, IFormController {
     private DatePicker konecDatePicker;  
     @FXML
     private ListView<Pocitac> pocitaceLW;    
-    
+    @FXML
+    private Label celkovaCenaLabel;
     @FXML
     private Button upravButton;
     
     private DBComboBox clients;
     
-    private Integer zakazkaId;
+    private Integer zakazkaId;    
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         clients = new DBComboBox(clientCombo);        
         upravButton.setDisable(true);
-        
+        celkovaCenaLabel.setText("24564");
         Format formatter = new SimpleDateFormat(StringDate.FORMAT);
         zacatekTF.setText(formatter.format(Calendar.getInstance().getTime()));
         konecDatePicker.setValue(LocalDate.now());
@@ -168,7 +169,8 @@ public class ZakazkaFormController implements Initializable, IFormController {
     
     @FXML
     public void odeberPocitacAction(ActionEvent ev) {
-        
+        Pocitac pocitac = pocitaceLW.getSelectionModel().getSelectedItem();
+        pocitaceLW.getItems().remove(pocitac);        
     }
     
     private void pridejPocitac(Pocitac pocitac) {
@@ -177,54 +179,67 @@ public class ZakazkaFormController implements Initializable, IFormController {
     
     private void refreshPocitace() {
         if (zakazkaId == null) return;
-        
+        int suma = 0;
         LinkedList<Pocitac> list = new LinkedList<>();
         try {
             PreparedStatement ps = OracleConnector.getConnection().prepareStatement(
                 "select id, popis_zavady, priblizna_cena "
                 + "from v_pocitace where zakazky_id = ?");
             ps.setInt(1, zakazkaId);   
-            ResultSet rs = ps.executeQuery();         
+            ResultSet rs = ps.executeQuery();                
             for (Map<String, String> oprava : DB.resultSetToListOfMapString(rs)) {             
+                int cena = Integer.parseInt(oprava.get("priblizna_cena"));
+                suma += cena;
                 list.add(new Pocitac(
                         Integer.parseInt(oprava.get("id")),
                         oprava.get("popis_zavady"), 
-                        Integer.parseInt(oprava.get("priblizna_cena"))));
+                        cena));
             }
         }catch (SQLException ex) {
             ErrorAlert.show("Chyba při vyběru počítačů z databáze.", ex);
         }
         
-         pocitaceLW.getItems().clear();
-         pocitaceLW.getItems().setAll(list);
+        celkovaCenaLabel.setText(String.valueOf(suma));
+        pocitaceLW.getItems().clear();
+        pocitaceLW.getItems().setAll(list);         
     }
     
     private void otevriFormular(boolean uprava) {        
         FormWindow form = App.createForm("Pocitac");
         if (uprava) {            
-            int index = pocitaceLW.getSelectionModel().getSelectedIndex();
-            Pocitac pocitac = pocitaceLW.getItems().get(index);            
+            Pocitac pocitac = pocitaceLW.getSelectionModel().getSelectedItem();
+            if (pocitac == null) {
+                throw new NullPointerException("Nebyl vybrán počítač.");
+            }            
             ((PocitacFormController)App.getController()).init(pocitac);
-            form.showAndWait();
+            form.showAndWait();                                                
             pocitaceLW.refresh();
         }else {
             form.showAndWait();
-            Pocitac pocitac = Pocitac.removePocitac();        
+            Pocitac pocitac = Pocitac.removePocitac();             
             if (pocitac != null) {
-                pridejPocitac(pocitac);
+                pridejPocitac(pocitac);                             
             }
         }        
+        aktualizujCenu();
+    }
+    
+    private void aktualizujCenu() {
+        int celkem = 0;
+        for (Pocitac p : pocitaceLW.getItems()) {
+            celkem += p.getCena();
+        }
+        celkovaCenaLabel.setText(String.valueOf(celkem));        
     }
     
     @Override
     public void setData(Map<String, String> data) {   
-//        zakazkaId = Integer.parseInt(data.get("id"));
-//        upravButton.setDisable(false); 
-//        System.out.println(zakazkaId);
-//        clients.select(new ItemIdValue(data.get("klienti_id")));                               
-//        zacatekTF.setText(StringDate.formatDate(data.get("datum_prijmuti"), StringDate.FORMAT));
-//        konecDatePicker.setValue(StringDate.StringToLocalDate(data.get("datum_priblizne_dokonceni")));
-//        refreshPocitace();
+        //zakazkaId = Integer.parseInt(data.get("id"));               
+        //clients.select(new ItemIdValue(data.get("klienti_id")));                               
+        //zacatekTF.setText(StringDate.formatDate(data.get("datum_prijmuti"), StringDate.FORMAT));
+        //konecDatePicker.setValue(StringDate.StringToLocalDate(data.get("datum_priblizne_dokonceni")));
+        //celkovaCenaLabel.setText(data.get("priblizna_cena"));
+        //refreshPocitace();
     }
     
 }

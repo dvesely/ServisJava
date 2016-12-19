@@ -59,6 +59,7 @@ public class PocitacFormController implements Initializable, IFormController {
     @FXML
     private ListView<ItemIdValue> opravyLW;
     
+    private Pocitac pocitac;
     private Integer zakazkaId;
     private Integer pocitacId;  
     private boolean editace = false;
@@ -78,8 +79,14 @@ public class PocitacFormController implements Initializable, IFormController {
         int cena = valid.toInteger(pribliznaCenaTF.getText(), "Přibližná cena");
         
         valid.validate();
-        if (!editace) {//editace nebo prace s pocitacem pres zakazku
-            Pocitac.setPocitac(new Pocitac(popisTA.getText(), cena));
+        if (!editace ) {//editace nebo prace s pocitacem pres zakazku
+            if (pocitac == null) {
+                Pocitac.setPocitac(new Pocitac(popisTA.getText(), cena));
+            }else {
+                pocitac.setPopis(popisTA.getText());
+                pocitac.setCena(cena);
+            }
+            
         }else {//jedna se o upravu v tabulce pocitace
             CallableStatement cStmt = DB.prepareCall("pck_pocitace.pridej_uprav_pocitac", 5);
             cStmt.registerOutParameter("p_result", OracleTypes.CLOB);
@@ -145,7 +152,8 @@ public class PocitacFormController implements Initializable, IFormController {
         return item.getId();
     }
     
-    public void init(Pocitac pocitac) {
+    public void init(Pocitac pocitac) {   
+        this.pocitac = pocitac;
         popisTA.setText(pocitac.getPopis());
         pribliznaCenaTF.setText(String.valueOf(pocitac.getCena()));        
     }

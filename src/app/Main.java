@@ -26,6 +26,7 @@ public class Main extends Application {
         
         Thread.setDefaultUncaughtExceptionHandler(Main::showError);        
         App.setPrimaryStage(stage);             
+        //App.setScene("Katalog");
         App.setScene("Login");
         stage.show();
         //App.showForm("Zakazka");
