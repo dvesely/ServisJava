@@ -40,8 +40,8 @@
                               </Label>
                            </children>
                            <columnConstraints>
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="247.0" minWidth="10.0" prefWidth="92.0" />
-                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="432.0" minWidth="10.0" prefWidth="412.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="247.0" minWidth="10.0" prefWidth="93.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" maxWidth="432.0" minWidth="10.0" prefWidth="341.0" />
                            </columnConstraints>
                            <rowConstraints>
                               <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -50,14 +50,15 @@
                         </GridPane>
                      </children>
                   </AnchorPane>
-                  <AnchorPane layoutX="10.0" layoutY="10.0" prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                  <HBox prefHeight="60.0" prefWidth="360.0" spacing="10.0">
                      <children>
-                        <Button layoutX="70.0" layoutY="13.0" mnemonicParsing="false" onAction="#logoutAction" text="Odhlásit" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#zobrazKatalog" text="Katalog" HBox.hgrow="ALWAYS" />
+                        <Button maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#logoutAction" text="Odhlásit" HBox.hgrow="ALWAYS" />
                      </children>
                      <HBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                        <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
                      </HBox.margin>
-                  </AnchorPane>
+                  </HBox>
                </children>
             </HBox>
          </children>
@@ -72,7 +73,7 @@
                   <Button fx:id="pocitacNeopaveneButton" maxHeight="1.7976931348623157E308" maxWidth="200.0" minHeight="50.0" minWidth="250.0" mnemonicParsing="false" onAction="#openPocitaceNeopaveneAction" text="Neopravené počítače" />
                   <Button fx:id="pocitacOpraveneButton" layoutX="300.0" layoutY="10.0" maxHeight="1.7976931348623157E308" maxWidth="200.0" minHeight="50.0" minWidth="250.0" mnemonicParsing="false" onAction="#pocitacOpraveneButton" text="Opravené počítače" />
                   <Button fx:id="pocitacVOpraveButton" layoutX="300.0" layoutY="150.0" maxHeight="1.7976931348623157E308" maxWidth="200.0" minHeight="50.0" minWidth="250.0" mnemonicParsing="false" onAction="#openPocitaceVOpraveAction" text="Počítače v opravě" />
-                  <Button fx:id="opravaButton" maxHeight="1.7976931348623157E308" maxWidth="200.0" minHeight="50.0" minWidth="250.0" mnemonicParsing="false" onAction="#openOpravyAction" text="Opravy" />
+                  <Button fx:id="opravaButton" maxHeight="1.7976931348623157E308" maxWidth="200.0" minHeight="50.0" minWidth="250.0" mnemonicParsing="false" onAction="#openOpravyAction" text="Aktivní opravy" />
                </children>
             </FlowPane>
          </children>

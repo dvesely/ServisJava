@@ -24,6 +24,7 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.FlowPane;
 import privileges.Opravneni;
 import privileges.Pozice;
+import tridy.Katalog;
 import user.User;
 
 /**
@@ -63,6 +64,11 @@ public class AppController implements Initializable {
     }    
     
     @FXML
+    public void zobrazKatalog(ActionEvent e) {
+        Katalog.show();
+    }
+    
+    @FXML
     public void logoutAction(ActionEvent e) {        
         App.setScene("Login");
     }
@@ -74,9 +80,9 @@ public class AppController implements Initializable {
             + "datum_dokonceni dokonceno, vyrizena, personal_id "
             + "from v_zakazky";        
         
-        Table table = App.createTable("Zakázky", "Zakazka", select);        
-        //table.setDeleteProcedure("pck_zakazky.smazZakazku");
+        Table table = App.createTable("Zakázky", "Zakazka", select);                
         table.setInsertable(true);
+        //table.setDeleteProcedure("pck_zakazky.smazZakazku");
         if (Opravneni.pristupPouze(Pozice.OBCHODNIK)) {
             table.setOnlyOwnRow(true);
         }
@@ -124,7 +130,10 @@ public class AppController implements Initializable {
     
     @FXML
     public void openPersonalAction(ActionEvent e) throws SQLException {
-        Table table = App.createTable("Personál", "Personal", "select * from v_personal");
+        Table table = App.createTable("Personál", "Personal", 
+                "select id,jmeno,prijmeni,pozice,telefon,email,"
+                + "mesto,ulice,cislo_popisne,psc,zeme from v_personal"
+        );
         table.setUpdateQuery(Query.PERSONAL_FORM);
         table.setDeleteProcedure("pck_personal.smaz_personal");
         table.setInsertable(true);
@@ -133,7 +142,9 @@ public class AppController implements Initializable {
     
     @FXML
     public void openKlientiAction(ActionEvent e) throws SQLException {
-        Table table = App.createTable("Klienti", "Klient", "select * from v_klienti");
+        Table table = App.createTable("Klienti", "Klient", 
+                "select id,jmeno,prijmeni,telefon,email,"
+                + "mesto,ulice,cislo_popisne,psc,zeme from v_klienti");
         table.setUpdateQuery(Query.KLIENT_FORM);
         table.setDeleteProcedure("pck_klienti.smaz_klienta");
         table.show();
@@ -141,9 +152,10 @@ public class AppController implements Initializable {
     
     @FXML
     public void openOpravyAction(ActionEvent e) throws SQLException {
-        Table table = App.createTable("Opravy", "Oprava", 
-                "select id,pocitace_id pocitace, typ_komponenty, popis_opravy,"
-                    + "cena from v_opravy"
+        Table table = App.createTable("Aktivní opravy", "Oprava", 
+            "select v_opravy.id, pocitace_id pocitac, typ_komponenty,popis_opravy,cena " +
+            "from v_opravy\n" +
+            "join v_pocitace_v_oprave vvo on vvo.id = pocitace_id"
         );        
         table.setUpdateQuery(Query.OPRAVY_FORM);
         table.setDeleteProcedure("pck_opravy.smaz_opravu");

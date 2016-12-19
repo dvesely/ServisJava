@@ -20,6 +20,7 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import table.Table;
+import tridy.Katalog;
 import util.FormWindow;
 import util.ItemIdValue;
 
@@ -42,6 +43,9 @@ public class App {
         primaryStage = stage;
         activeStage = stage;
         addOnFocusEvent(stage);
+        stage.setOnCloseRequest(event -> {
+            Katalog.close();
+        });
     }
     
     public static Stage createView(String sceneName) {
@@ -53,7 +57,9 @@ public class App {
             stage.initModality(Modality.APPLICATION_MODAL);
             addOnFocusEvent(stage);
             return stage;
-        }catch (IOException e){};
+        }catch (IOException e){
+            ErrorAlert.show("Chyba při zobrazování nového okna.");
+        };
         return null;
     }
     
