@@ -121,8 +121,7 @@ public class LoginController implements Initializable {
                     cStmt.setString(2, passwordTF.getText());                    
                     cStmt.registerOutParameter(3, OracleTypes.CLOB);
                     cStmt.execute();                    
-                    JSON.checkStatus(cStmt.getString(3));     
-                    System.out.println(cStmt.getString(3));
+                    JSON.checkStatus(cStmt.getString(3));                         
                     return new UserInfo(
                             JSON.getAsInt("id"),
                             JSON.getAsString("cele_jmeno"),

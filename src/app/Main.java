@@ -41,8 +41,7 @@ public class Main extends Application {
         table.setDeleteProcedure("pck_pocitace.smaz_pocitac");*/
     }
 
-        private static void showError(Thread t, Throwable e) {
-        System.err.println("***Default exception handler***");
+        private static void showError(Thread t, Throwable e) {        
         if (Platform.isFxApplicationThread()) {
             while (e.getCause() != null) {
                 e = e.getCause();
@@ -50,7 +49,6 @@ public class Main extends Application {
             showErrorDialog(e);
         } else {
             System.err.println("An unexpected error occurred in "+t);
-
         }
     }
 
@@ -59,11 +57,13 @@ public class Main extends Application {
         System.err.println(e.getMessage());
         if (e instanceof SQLException) {              
             alert.setHeaderText("Chyba databáze");
-            e.printStackTrace();
+            System.err.print(e.getClass());
+            //e.printStackTrace();
         }else if (e instanceof ValidException) {
-            alert.setHeaderText("Validace formuláře");
+            alert.setHeaderText("Validace formuláře");            
         }else {
-            e.printStackTrace();
+            //e.printStackTrace();
+            System.err.print(e.getClass());
         }
         alert.show();
     }
