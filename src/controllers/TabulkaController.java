@@ -53,6 +53,7 @@ public class TabulkaController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         menu.getItems().remove(selectItem); 
         menu.getItems().remove(doneItem);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         
     }    
     

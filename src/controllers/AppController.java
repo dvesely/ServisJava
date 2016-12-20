@@ -93,9 +93,9 @@ public class AppController implements Initializable {
     public void pocitacOpraveneButton(ActionEvent e) throws SQLException {
         Table table = App.createTable("Opravené počítače", "Pocitac", 
                 "select * from v_pocitace_opravene");         
-        if (Opravneni.pristupPouze(Pozice.MANAGER)) {//mazat muze jenom manazer
-            table.setDeleteProcedure("pck_pocitace.smaz_pocitac");            
-        }
+        //if (Opravneni.pristupPouze(Pozice.MANAGER)) {//mazat muze jenom manazer
+        //    table.setDeleteProcedure("pck_pocitace.smaz_pocitac");            
+        //}
         table.show();
     }  
     
@@ -146,17 +146,19 @@ public class AppController implements Initializable {
                 "select id,jmeno,prijmeni,telefon,email,"
                 + "mesto,ulice,cislo_popisne,psc,zeme from v_klienti");
         table.setUpdateQuery(Query.KLIENT_FORM);
-        table.setDeleteProcedure("pck_klienti.smaz_klienta");
+        //table.setDeleteProcedure("pck_klienti.smaz_klienta");
         table.show();
     }
     
     @FXML
-    public void openOpravyAction(ActionEvent e) throws SQLException {
-        Table table = App.createTable("Aktivní opravy", "Oprava", 
-            "select v_opravy.id, pocitace_id pocitac, typ_komponenty,popis_opravy,cena " +
+    public void openOpravyAction(ActionEvent e) throws SQLException {        
+        String select = "select v_opravy.id, pocitace_id pocitac, typ_komponenty,popis_opravy,cena " +
             "from v_opravy\n" +
-            "join v_pocitace_v_oprave vvo on vvo.id = pocitace_id"
-        );        
+            "join v_pocitace_v_oprave vvo on vvo.id = pocitace_id ";
+        if (Opravneni.pristupPouze(Pozice.TECHNIK)) {
+            select += "where personal_id = "+User.getId();//vidi pouze sve opravy
+        }
+        Table table = App.createTable("Aktivní opravy", "Oprava", select);        
         table.setUpdateQuery(Query.OPRAVY_FORM);
         table.setDeleteProcedure("pck_opravy.smaz_opravu");
         table.show();
@@ -167,7 +169,8 @@ public class AppController implements Initializable {
         if (Opravneni.pristupPouze(Pozice.TECHNIK)) {
             //nikdo z techniku nevidi zakazky, klienty, personal
             removeButtons(zakazkaButton, klientButton,personalButton);
-            pocitacVOpraveButton.setText("Moje opravy");
+            pocitacVOpraveButton.setText("Moje počítače");
+            opravaButton.setText("Moje opravy");
         }else if (Opravneni.pristupPouze(Pozice.OBCHODNIK)) {
             //nikdo z obchoniku neuvidi pocitace, opravy a personal
             removeButtons(pocitacNeopaveneButton, pocitacOpraveneButton, pocitacVOpraveButton

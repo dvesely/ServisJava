@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -30,12 +31,16 @@ import javafx.scene.layout.VBox;
 public class KatalogViewController implements Initializable {
 
     private final String[] NOT_INCLUDE_TYPES = new String[]{
-        "LOB", "PROCEDURE", "TABLE" 
+        "LOB", "PROCEDURE", "TABLE", "PACKAGE BODY", "INDEX"
     };
     private final String[] NAMES = new String[]{
         "SUBOBJECT_NAME", "CREATED", "LAST_DDL_TIME", "TIMESTAMP", 
         "STATUS", "TEMPORARY", "GENERATED", "SECONDARY","NAMESPACE"
         //"EDITION_NAME"
+    };
+
+    private final boolean[] PREFIX = new boolean[]{
+        true, false, true, false, true, false
     };
     
     @FXML
@@ -82,12 +87,19 @@ public class KatalogViewController implements Initializable {
             + "where object_type = ?");
         ps.setString(1, type);        
         fillCombo(ps.executeQuery(), nameCombo, "Vyber název");
+        if (PREFIX[typeCombo.getSelectionModel().getSelectedIndex()-1]) {
+            nameCombo.getItems().setAll(
+            nameCombo.getItems().stream().filter(name -> name.startsWith("S_"))
+                    .collect(Collectors.toList())
+            );
+        }
+        
     }
     
     @FXML
     public void nameAction(ActionEvent ev) throws SQLException {
         String type = typeCombo.getSelectionModel().getSelectedItem();        
-        String name = nameCombo.getSelectionModel().getSelectedItem();        
+        String name = nameCombo.getSelectionModel().getSelectedItem();  
         PreparedStatement ps = conn.prepareStatement(
             "select "+implode(NAMES, ",")+" from user_objects "
             + "where object_type = ? AND object_name = ?");
